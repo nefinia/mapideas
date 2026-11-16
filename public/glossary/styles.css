@@ -1,0 +1,108 @@
+/* Glossary Game, part of The Map of Ideas. Scoped under .tool-app. */
+:root{--bg:#fbf3e4;--card:#fffcf5;--ink:#2b2a33;--dim:#5f5a50;--faint:#7b756a;--glow:#2f7fb8;--glow-soft:rgba(47,127,184,.12);--line:#e3d8c3;--display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;--body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5}
+.gtop{max-width:1100px;margin:0 auto;padding:18px 20px 0;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.gtop a{color:var(--ink);text-decoration:none;font-family:var(--mono);font-size:.82rem;border:1px solid var(--line);border-radius:4px;padding:8px 14px;background:var(--card)}
+.gtop a:hover{border-color:var(--ink)}
+.gintro{max-width:1100px;margin:0 auto;padding:26px 20px 18px}
+.gintro h1{font-family:var(--display);font-weight:800;font-size:clamp(30px,4vw,44px);margin:0 0 8px}
+.gintro p{margin:0;max-width:62ch;color:var(--dim)}
+.gmain{max-width:1100px;margin:0 auto;padding:0 20px 56px}
+.gfoot{max-width:1100px;margin:0 auto;padding:0 20px 40px;color:var(--faint);font-size:.85rem}
+.gfoot a{color:inherit}
+.tool-app{display:flex;flex-direction:column;gap:20px;font-size:1rem}
+.tool-app *{box-sizing:border-box}
+.tool-app [hidden]{display:none!important}
+.tool-app button,.tool-app input{font:inherit;color:inherit}
+.tool-app :is(button,input,a,svg [tabindex]):focus-visible{outline:2px solid var(--glow);outline-offset:2px}
+
+.tool-app .gg-card{background:var(--card);border:1px solid var(--line);border-radius:6px;box-shadow:0 1px 2px rgba(43,42,51,.04),0 8px 24px rgba(43,42,51,.05);padding:22px 24px;min-width:0}
+.tool-app .gg-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.tool-app .gg-modes,.tool-app .gg-langs{display:flex;gap:8px;flex-wrap:wrap}
+.tool-app .gg-chip,.tool-app .gg-lang{min-height:40px;padding:8px 16px;border:1px solid var(--line);border-radius:4px;background:var(--card);color:var(--ink);font-size:.9em;cursor:pointer;transition:border-color .2s,background .2s,color .2s}
+.tool-app .gg-lang{min-width:44px;padding-inline:10px;font-family:var(--mono);font-size:.78em;letter-spacing:.04em;color:var(--dim)}
+.tool-app .gg-chip:hover,.tool-app .gg-lang:hover{border-color:var(--ink)}
+.tool-app .gg-chip.active{background:var(--glow);border-color:var(--glow);color:#fff}
+.tool-app .gg-lang.active{background:var(--ink);border-color:var(--ink);color:#fff}
+
+.tool-app .gg-form{display:flex;flex-wrap:wrap;gap:14px 16px;align-items:flex-end;margin-top:18px}
+.tool-app .gg-field{display:flex;flex-direction:column;gap:6px;flex:1 1 220px;min-width:0}
+.tool-app .gg-field span{font-family:var(--mono);font-size:.78em;letter-spacing:.04em;color:var(--faint)}
+.tool-app .gg-field input{min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);width:100%}
+.tool-app .gg-field input:focus{border-color:var(--glow)}
+.tool-app .gg-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.tool-app .gg-btn{display:inline-flex;align-items:center;justify-content:center;gap:.4em;min-height:44px;padding:10px 20px;border:1px solid rgba(43,42,51,.3);border-radius:2px;background:transparent;color:var(--ink);font-size:.8em;letter-spacing:.02em;text-decoration:none;cursor:pointer;transition:background .2s,border-color .2s,color .2s}
+.tool-app .gg-btn:hover:not(:disabled){border-color:var(--ink);background:rgba(43,42,51,.04)}
+.tool-app .gg-btn.primary{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:500}
+.tool-app .gg-btn.primary:hover:not(:disabled){background:var(--glow);border-color:var(--glow)}
+.tool-app .gg-btn.kept{border-color:var(--glow);color:var(--glow);background:var(--glow-soft)}
+.tool-app .gg-btn.small{min-height:36px;padding:6px 14px}
+.tool-app .gg-btn:disabled{opacity:.45;cursor:not-allowed}
+.tool-app .gg-hint{margin:14px 0 0;color:var(--dim);font-size:.92em;max-width:70ch}
+.tool-app .gg-status{margin:0;font-family:var(--mono);font-size:.78em;color:var(--faint);letter-spacing:.02em;line-height:1.5;min-height:1.5em}
+.tool-app .gg-status .err{color:#9b2335}
+.tool-app .gg-status .win{color:var(--glow);font-weight:700}
+
+.tool-app .gg-play{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:start}
+.tool-app .gg-graphcard{padding:12px}
+.tool-app #graph{display:block;width:100%;height:auto;max-height:72vh;background:#080a1c;border-radius:10px}
+.tool-app #graph .star{fill:#fff;opacity:.55;animation:ggTw 4s ease-in-out infinite}
+@keyframes ggTw{50%{opacity:.12}}
+.tool-app #graph .edge{stroke:#6f7bd0;stroke-width:1.2;opacity:.55}
+.tool-app #graph .edge.ghost{stroke:#8a96e8;stroke-width:1;opacity:.28}
+.tool-app #graph .edge.path{stroke:#d9bd8c;stroke-width:2;opacity:.75}
+.tool-app #graph .node{cursor:pointer}
+.tool-app #graph .node .dot{fill:#aab4ff;stroke:#dfe3ff;stroke-width:1;transition:r .15s}
+.tool-app #graph .node.near .dot{fill:#5a67c9;stroke:#9aa5f5;opacity:.9}
+.tool-app #graph .node.visited .dot{fill:#7f8dff}
+.tool-app #graph .node.onpath .dot{fill:#d9bd8c;stroke:#f1e6d0}
+.tool-app #graph .node.kept .dot{fill:#7fe3c4;stroke:#d5fff2}
+.tool-app #graph .node.current .dot{fill:#fff;stroke:#fff}
+.tool-app #graph .node.start .dot{fill:#7fe3c4;stroke:#e8fff8}
+.tool-app #graph .node.target .dot{fill:#ff9ec4;stroke:#ffe6f0}
+.tool-app #graph .node .halo{fill:none;stroke:#fff;stroke-opacity:.35;stroke-width:1.2;animation:ggPulse 2.4s ease-out infinite;transform-box:fill-box;transform-origin:center}
+.tool-app #graph .node.start .halo{stroke:#7fe3c4}.tool-app #graph .node.target .halo{stroke:#ff9ec4}
+@keyframes ggPulse{0%{transform:scale(.7);opacity:.9}100%{transform:scale(1.5);opacity:0}}
+.tool-app #graph .node:hover .dot,.tool-app #graph .node:focus .dot{stroke-width:3;stroke:#fff}
+.tool-app #graph .node text{font-family:"Roboto",Helvetica,Arial,sans-serif;font-size:13px;fill:#e9ecff;paint-order:stroke;stroke:#080a1c;stroke-width:4px;stroke-linejoin:round;pointer-events:none}
+.tool-app #graph .node.near text{fill:#aab2e6;font-size:12px}
+.tool-app #graph .node.start text,.tool-app #graph .node.target text,.tool-app #graph .node.onpath text{font-weight:700;fill:#fff;font-size:14px}
+@media (prefers-reduced-motion:reduce){.tool-app #graph .star,.tool-app #graph .node .halo{animation:none}}
+.tool-app .gg-legend{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:10px 8px 4px;font-size:.8em;color:var(--dim)}
+.tool-app .gg-legend .k{display:inline-block;width:12px;height:12px;border-radius:50%;border:1.6px solid var(--dim);background:#fff;margin-right:-6px}
+.tool-app .gg-legend .k.visited{background:#7f8dff;border-color:#7f8dff}
+.tool-app .gg-legend .k.current{background:#fff;border-color:var(--dim)}
+.tool-app .gg-legend .k.near{border-style:dashed}
+.tool-app .gg-legend .k.kept{background:var(--glow);border-color:var(--glow)}
+
+.tool-app .gg-term h2,.tool-app .gg-h2{font-family:var(--display);font-weight:900;font-size:clamp(24px,2.6vw,32px);line-height:1.15;margin:6px 0 0;text-wrap:balance}
+.tool-app .gg-h2{margin:0;font-size:clamp(22px,2.2vw,28px)}
+.tool-app .gg-eyebrow{margin:0;font-family:var(--mono);font-size:.78em;letter-spacing:.04em;color:var(--glow)}
+.tool-app .gg-desc{margin:6px 0 0;color:var(--faint);font-size:.9em}
+.tool-app .gg-extract{margin:12px 0 18px;color:var(--ink);font-size:.98em;line-height:1.6}
+.tool-app .gg-sub{font-family:var(--mono);font-weight:400;font-size:.78em;letter-spacing:.04em;color:var(--faint);margin:22px 0 10px}
+.tool-app .gg-near{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.tool-app .gg-near button{min-height:40px;padding:8px 14px;border:1px solid var(--line);border-radius:4px;background:var(--card);cursor:pointer;font-size:.9em;transition:border-color .2s,background .2s}
+.tool-app .gg-near button:hover{border-color:var(--ink)}
+.tool-app .gg-near button.seen{background:var(--glow-soft);border-color:var(--glow)}
+.tool-app .gg-near .none{color:var(--dim);font-size:.9em}
+
+.tool-app .gg-list{margin:16px 0 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 36px}
+.tool-app .gg-list div{border-top:1px solid var(--line);padding:14px 0;min-width:0}
+.tool-app .gg-list dt{font-weight:500;display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.tool-app .gg-list dd{margin:4px 0 0;color:var(--dim);font-size:.92em}
+.tool-app .gg-list button{border:0;background:none;color:var(--faint);cursor:pointer;font-size:.85em;text-decoration:underline;padding:4px}
+.tool-app .gg-list button:hover{color:var(--ink)}
+
+@media (max-width:900px){
+  .tool-app .gg-play{grid-template-columns:1fr}
+  .tool-app .gg-list{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .tool-app .gg-card{padding:18px 16px}
+  .tool-app .gg-graphcard{padding:8px}
+}
+
+.tool-app #graph .node.shared .dot{fill:#efe0bf;stroke:#fff}
+.tool-app #graph .node.shared .halo{display:none}

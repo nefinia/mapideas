@@ -1,0 +1,42 @@
+name = "themap"
+main = "src/worker.js"
+compatibility_date = "2026-10-01"
+
+routes = [
+  { pattern = "mapideas.org", custom_domain = true },
+  { pattern = "www.mapideas.org", custom_domain = true },
+]
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*", "/auth/*", "/ev", "/i", "/i/*", "/sitemap.xml", "/llms.txt", "/llms-full.txt", "/bridges", "/bridges/*"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "starloom"
+database_id = "c07cce03-478a-4db9-a664-aa7f63debb95"
+
+# Bridges (mapideas.org/bridges) keeps its answers in its own database, apart from the map.
+[[d1_databases]]
+binding = "BRIDGES_DB"
+database_name = "bridges"
+database_id = "43876eb4-6b2f-4601-b5a6-636e8d644604"
+
+# Bridges: private voice transcription (Whisper) inside this Cloudflare account.
+[ai]
+binding = "AI"
+
+# Bridges: its two pages are bundled into the worker as text.
+[[rules]]
+type = "Text"
+globs = ["bridges/**/*.html"]
+fallthrough = true
+
+[vars]
+ADMIN_EMAILS = "admin@example.com"
+AI_MODEL = "claude-haiku-5-5"
+AI_BUDGET_USD = "5"
+# Bridges: answers under these player codes are tester data, left out of the analysis.
+BRIDGES_TESTER_CODES = ""

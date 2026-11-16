@@ -1,0 +1,3 @@
+{ "name": "themap", "private": true, "type": "module",
+  "scripts": { "dev": "wrangler dev", "deploy": "wrangler deploy", "db:schema": "wrangler d1 execute starloom --remote --file=schema.sql" },
+  "devDependencies": { "wrangler": "^4" } }

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stats · The Map of Ideas</title><meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+:root{color-scheme:light dark;--bg:#fbf3e4;--card:#fffcf5;--fg:#2b2a33;--mu:#6a6458;--ln:#e3d8c3;--bar:#2f7fb8;--bar2:#2b2a33}
+@media(prefers-color-scheme:dark){:root{--bg:#0a0d14;--card:#12161f;--fg:#e8e6df;--mu:#9a9588;--ln:#26293a;--bar:#7fb6e0;--bar2:#e8e6df}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:60rem;margin:0 auto;padding:1.2rem 1rem 4rem}
+header{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;justify-content:space-between;margin-bottom:1.2rem}
+h1{font-size:1.4rem;margin:0}a{color:var(--bar)}
+.sel{display:flex;gap:.4rem;flex-wrap:wrap}
+.sel button{font:inherit;font-size:.85rem;color:var(--fg);background:var(--card);border:1px solid var(--ln);border-radius:999px;padding:.3rem .8rem;cursor:pointer}
+.sel button[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:.7rem;margin-bottom:1rem}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:.8rem 1rem}
+.card b{display:block;font-size:1.7rem;line-height:1.1}.card span{color:var(--mu);font-size:.8rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:.7rem}
+h2{font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:var(--mu);margin:0 0 .6rem;font-weight:600}
+.row{display:grid;grid-template-columns:7.5rem 1fr 2.4rem;gap:.5rem;align-items:center;font-size:.85rem;margin:.22rem 0}
+.row i{display:block;height:.7rem;background:var(--bar);border-radius:3px;min-width:2px}
+.row em{font-style:normal;color:var(--mu);text-align:right}
+.row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.days{display:flex;align-items:flex-end;gap:2px;height:7rem;margin-top:.4rem}
+.days div{flex:1;background:var(--bar);border-radius:2px 2px 0 0;min-height:2px;position:relative}
+.axis{display:flex;justify-content:space-between;color:var(--mu);font-size:.75rem;margin-top:.2rem}
+.wide{grid-column:1/-1}.none{color:var(--mu)}
+.note{color:var(--mu);font-size:.8rem;margin-top:1rem}
+</style></head><body><main>
+<header><h1>Stats <span class="none" style="font-weight:400;font-size:.9rem">· The Map of Ideas</span></h1>
+<div class="sel" id="rng" role="group" aria-label="Range"><button data-d="7" aria-pressed="false">7 days</button><button data-d="30" aria-pressed="true">30 days</button><button data-d="0" aria-pressed="false">all</button></div>
+<div class="sel" id="app" role="group" aria-label="Part of the site"></div>
+<a href="/">back to the map</a></header>
+<div id="out"><p class="none">Loading…</p></div>
+<p class="note">Anonymous hourly totals. No cookies, no IP, nothing typed is stored. Times are UTC. Visits are counted when a page opens; your own visits are included.</p>
+</main>
+<script>
+(function () {
+  var rows = [], range = 30, app = 'map', out = document.getElementById('out');
+  function el(t, c, x) { var e = document.createElement(t); if (c) { e.className = c; } if (x != null) { e.textContent = x; } return e; }
+  function load() {
+    fetch('/api/stats?format=json', { credentials: 'same-origin' }).then(function (r) {
+      if (r.status === 401) { throw new Error('Sign in on the map with the curator account, then come back here.'); }
+      if (r.status === 403) { throw new Error('This page is for curators only.'); }
+      if (!r.ok) { throw new Error('Could not load the numbers.'); }
+      return r.json();
+    }).then(function (j) { rows = j.rows || []; apps(); draw(); }).catch(function (e) { out.innerHTML = ''; out.appendChild(el('p', 'none', e.message)); });
+  }
+  function apps() {
+    var set = {}; rows.forEach(function (r) { set[r[0]] = 1; });
+    var list = Object.keys(set).sort(); if (!list.length) { list = ['map']; }
+    if (list.indexOf(app) < 0) { app = list[0]; }
+    var box = document.getElementById('app'); box.innerHTML = '';
+    list.forEach(function (a) { var b = el('button', null, a); b.setAttribute('aria-pressed', a === app ? 'true' : 'false'); b.onclick = function () { app = a; apps(); draw(); }; box.appendChild(b); });
+  }
+  document.getElementById('rng').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) { return; }
+    range = parseInt(b.getAttribute('data-d'), 10);
+    Array.prototype.forEach.call(this.children, function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+    draw();
+  });
+  function dayStr(d) { return d.toISOString().slice(0, 10); }
+  function draw() {
+    var from = '0000'; if (range) { var d0 = new Date(); d0.setUTCDate(d0.getUTCDate() - (range - 1)); from = dayStr(d0); }
+    var r = rows.filter(function (x) { return x[0] === app && x[1] >= from; });
+    var tot = {}, perDay = {};
+    r.forEach(function (x) { tot[x[3]] = (tot[x[3]] || 0) + x[4]; if (x[3] === 'open') { perDay[x[1]] = (perDay[x[1]] || 0) + x[4]; } });
+    out.innerHTML = '';
+    var week = new Date(); week.setUTCDate(week.getUTCDate() - 6); var wk = dayStr(week), wopen = 0;
+    rows.forEach(function (x) { if (x[0] === app && x[3] === 'open' && x[1] >= wk) { wopen += x[4]; } });
+    var cards = el('div', 'cards');
+    [[tot.open || 0, range ? 'visits, last ' + range + ' days' : 'visits, all time'], [wopen, 'visits, last 7 days'], [Object.keys(tot).filter(function (k) { return k.indexOf('country:') === 0; }).length, 'countries'], [(tot['open:phone'] || 0) ? Math.round(100 * (tot['open:phone'] || 0) / Math.max(tot.open || 1, 1)) + '%' : '0%', 'on a phone']].forEach(function (c) { var k = el('div', 'card'); k.appendChild(el('b', null, c[0])); k.appendChild(el('span', null, c[1])); cards.appendChild(k); });
+    out.appendChild(cards);
+    var grid = el('div', 'grid'); out.appendChild(grid);
+    // per-day chart
+    var n = range || 30, days = []; var dd = new Date(); dd.setUTCDate(dd.getUTCDate() - (n - 1));
+    if (!range) { var keys = Object.keys(perDay).sort(); if (keys.length) { dd = new Date(keys[0] + 'T00:00:00Z'); n = Math.max(1, Math.round((Date.now() - dd.getTime()) / 864e5) + 1); } }
+    for (var i = 0; i < n; i++) { var s = dayStr(dd); days.push([s, perDay[s] || 0]); dd.setUTCDate(dd.getUTCDate() + 1); }
+    var cc = el('div', 'card wide'); cc.appendChild(el('h2', null, 'Visits per day')); var bars = el('div', 'days'), mx = Math.max.apply(null, days.map(function (x) { return x[1]; }).concat([1]));
+    days.forEach(function (x) { var b = el('div'); b.style.height = Math.max(2, 100 * x[1] / mx) + '%'; b.title = x[0] + ': ' + x[1]; bars.appendChild(b); });
+    cc.appendChild(bars); var ax = el('div', 'axis'); ax.appendChild(el('span', null, days[0][0])); ax.appendChild(el('span', null, 'max ' + mx)); ax.appendChild(el('span', null, days[days.length - 1][0])); cc.appendChild(ax); grid.appendChild(cc);
+    function panel(title, prefix, label) {
+      var items = Object.keys(tot).filter(function (k) { return prefix.some(function (p) { return k.indexOf(p) === 0; }); }).map(function (k) { return [label ? label(k) : k, tot[k]]; }).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 12);
+      var c = el('div', 'card'); c.appendChild(el('h2', null, title));
+      if (!items.length) { c.appendChild(el('p', 'none', 'Nothing yet.')); }
+      var m = Math.max.apply(null, items.map(function (x) { return x[1]; }).concat([1]));
+      items.forEach(function (x) { var rw = el('div', 'row'); rw.appendChild(el('span', null, x[0])); var bar = el('i'); bar.style.width = (100 * x[1] / m) + '%'; rw.appendChild(bar); rw.appendChild(el('em', null, x[1])); c.appendChild(rw); });
+      grid.appendChild(c);
+    }
+    var cut = function (p) { return function (k) { return k.slice(p.length); }; };
+    panel('Device', ['open:phone', 'open:tablet', 'open:desktop'], cut('open:'));
+    panel('How it opened', ['open:installed', 'open:browser'], cut('open:'));
+    panel('Display', ['scheme:'], cut('scheme:'));
+    panel('Language', ['lang:'], cut('lang:'));
+    panel('Country', ['country:'], function (k) { return k.slice(8).toUpperCase(); });
+    panel('Pages', ['page:'], cut('page:'));
+    panel('Tools and exports', ['tool', 'tools:', 'export:', 'look:', 'edit:'], function (k) { return k; });
+    var rest = Object.keys(tot).filter(function (k) { return !/^(open|page:|scheme:|lang:|country:|tool|export:|look:|edit:|theme:)/.test(k); });
+    if (rest.length) { panel('Other events', rest.map(function (k) { return k; }), function (k) { return k; }); }
+  }
+  load();
+})();
+</script></body></html>

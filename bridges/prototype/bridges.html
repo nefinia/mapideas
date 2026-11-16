@@ -1,0 +1,901 @@
+<title>Bridges</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one narrow column, one pair at a time; the two ideas sit at opposite ends of a dashed arrow the player has to cross. */
+:root{
+  --bg:#fbf3e4; --surface:#fffaf1; --ink:#22262f; --muted:#6d6a63; --line:#e3d8c4;
+  --accent:#2f5d7c; --accent-soft:#dbe7ee; --ai:#8a5a8c; --ai-soft:#efe3ef; --star:#c7902f;
+  --display:"Instrument Serif", Georgia, "Times New Roman", serif;
+  --body:"Atkinson Hyperlegible", system-ui, -apple-system, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#17191e; --surface:#1f2228; --ink:#ece6da; --muted:#a39d92; --line:#343840;
+  --accent:#8fb8d4; --accent-soft:#24323d; --ai:#c9a1cb; --ai-soft:#33273a; --star:#e2b55c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#17191e; --surface:#1f2228; --ink:#ece6da; --muted:#a39d92; --line:#343840;
+  --accent:#8fb8d4; --accent-soft:#24323d; --ai:#c9a1cb; --ai-soft:#33273a; --star:#e2b55c; color-scheme:dark}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px}
+.wrap{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-size:30px;letter-spacing:.01em}
+.langsel{font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px}
+h1,h2{font-family:var(--display);font-weight:400;text-wrap:balance;margin:0}
+h1{font-size:clamp(34px,7vw,46px);line-height:1.08}
+h2{font-size:28px;line-height:1.15}
+p{margin:0;max-width:62ch}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:16px}
+ul.plain{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pills label{position:relative;display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:400;font-size:15px;cursor:pointer;background:var(--bg)}
+.pills input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.pills label:has(input:checked){background:var(--accent-soft);border-color:var(--accent)}
+.pills label:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.q{display:flex;flex-direction:column;gap:8px}
+.qt{font-weight:700;font-size:15px}
+.scale-ends{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);max-width:320px}
+.diff{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:14px;color:var(--muted)}
+.diff button{background:transparent;color:var(--muted);border:1px solid var(--line);padding:4px 12px;font-size:14px;font-weight:400}
+.diff button[aria-pressed="true"]{background:var(--accent-soft);color:var(--ink);border-color:var(--accent)}
+.dat{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.helpq{width:32px;height:32px;border-radius:50%;padding:0;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:700;font-size:16px;line-height:1}
+.helpq[aria-expanded="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.helpbox{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 22px;display:flex;flex-direction:column;gap:10px}
+.helpbox ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.langchips{display:flex;flex-wrap:wrap;gap:6px}
+.langchips button{background:transparent;color:var(--muted);border:1px solid var(--line);padding:5px 12px;font-size:14px;font-weight:400}
+.langchips button.on{background:var(--accent-soft);color:var(--ink);border-color:var(--accent)}
+.langs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.langs button{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:16px;font-family:var(--display);font-size:24px;font-weight:400;text-align:left}
+.langs button:hover{border-color:var(--accent)}
+.hello{display:flex;flex-direction:column;gap:2px;font-family:var(--display);font-size:20px;line-height:1.3;color:var(--muted)}
+.hello span:first-child{color:var(--ink);font-size:clamp(30px,6vw,40px)}
+
+.pair{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding-block:8px}
+.idea{font-family:var(--display);font-size:clamp(24px,6vw,34px);line-height:1.1;text-align:center;text-wrap:balance;min-width:0}
+.gap{position:relative;width:clamp(44px,14vw,110px);height:2px;background:repeating-linear-gradient(90deg,var(--accent) 0 6px,transparent 6px 12px)}
+.gap::after{content:"";position:absolute;right:0;top:50%;width:10px;height:10px;border-top:2px solid var(--accent);border-right:2px solid var(--accent);transform:translateY(-50%) rotate(45deg)}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+label{font-weight:700;font-size:15px}
+textarea,input[type=text],input[type=email]{width:100%;box-sizing:border-box;font:inherit;color:var(--ink);background:var(--bg);
+  border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+textarea{min-height:120px;resize:vertical}
+textarea:focus,input:focus,button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.stones{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (max-width:480px){.stones{grid-template-columns:1fr}}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spread{justify-content:space-between}
+button{font:inherit;font-weight:700;border-radius:999px;padding:11px 20px;cursor:pointer;border:1px solid transparent}
+.primary{background:var(--accent);color:var(--bg)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.link{background:none;border:0;padding:6px 2px;color:var(--muted);font-weight:400;text-decoration:underline;text-underline-offset:3px}
+.aibtn{background:var(--ai-soft);color:var(--ai);border-color:transparent}
+.mic{display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--accent);border-color:var(--line);padding:8px 14px;font-size:15px}
+.mic[aria-pressed="true"]{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.mic svg{width:16px;height:16px}
+.micnote{font-size:13px;color:var(--muted)}
+.ai{background:var(--ai-soft);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.ai .tag{color:var(--ai)}
+.choice{display:flex;flex-direction:column;gap:8px}
+.choice label{font-weight:400;display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.choice input{margin-top:5px}
+.qlabel{font-weight:700;font-size:15px;border:0!important;padding:0!important;cursor:default!important}
+.check{font-weight:400;display:flex;gap:10px;align-items:flex-start}
+.check input{margin-top:5px}
+.progress{height:4px;background:var(--line);border-radius:4px;overflow:hidden}
+.progress span{display:block;height:100%;background:var(--accent);transition:width .3s}
+@media (prefers-reduced-motion:reduce){.progress span{transition:none}}
+.bridge{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:15px}
+.chip{background:var(--accent-soft);border-radius:999px;padding:3px 10px}
+.arrow{color:var(--muted)}
+.count{font-family:var(--display);font-size:22px}
+.code{font-family:var(--mono);font-size:17px;background:var(--accent-soft);border-radius:8px;padding:4px 10px;user-select:all}
+.stars{display:flex;gap:6px}
+.stars button{background:transparent;border:1px solid var(--line);padding:6px 10px;font-size:22px;line-height:1;color:var(--muted)}
+.stars button.on{color:var(--star);border-color:var(--star)}
+.confirm{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.list-item{display:flex;flex-direction:column;gap:6px;padding-block:10px;border-top:1px solid var(--line)}
+.section{display:flex;flex-direction:column;gap:8px;padding-top:14px;border-top:1px solid var(--line)}
+details{border-top:1px solid var(--line);padding-top:14px}
+summary{cursor:pointer;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--muted)}
+pre{font-family:var(--mono);font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;max-height:340px}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand">Bridges</div>
+    <div class="row" style="gap:12px"><button class="link" id="startover" type="button" hidden>Start over</button><select class="langsel" id="langsel" aria-label="Language" hidden></select><button class="helpq" id="helpbtn" type="button" aria-expanded="false" aria-label="How it works">?</button></div>
+  </header>
+  <div id="helpbox"></div>
+  <div id="topconfirm"></div>
+  <div class="progress" aria-hidden="true"><span id="bar" style="width:0%"></span></div>
+  <main id="app"></main>
+  <details>
+    <summary>Researcher view (prototype only)</summary>
+    <p class="small muted" style="margin-top:10px">What would be saved, anonymously. In this prototype nothing leaves your browser; the player code and bridges stay on this device so the returning-player flow can be tried.</p>
+    <div class="row" style="margin-block:10px"><button class="ghost" id="resetproto" type="button">Reset this device and start fresh</button></div>
+    <pre id="log">{}</pre>
+  </details>
+</div>
+
+<script>
+// ================= Languages =================
+const LANGS = [["en","English"],["fr","Français"],["es","Español"],["it","Italiano"],["de","Deutsch"]];
+const SPEECH = {en:"en-GB", fr:"fr-FR", es:"es-ES", it:"it-IT", de:"de-DE"};
+
+// Concepts, translated one by one. Words flagged for a native check: fr "carte" (map/card), fr "aiguille" (needle/clock hand), de "Glück" (luck/happiness).
+const C = {
+  bee:["a bee","une abeille","una abeja","un'ape","eine Biene"],
+  mirror:["a mirror","un miroir","un espejo","uno specchio","ein Spiegel"],
+  salt:["salt","le sel","la sal","il sale","Salz"],
+  clock:["a clock","une horloge","un reloj","un orologio","eine Uhr"],
+  river:["a river","une rivière","un río","un fiume","ein Fluss"],
+  secret:["a secret","un secret","un secreto","un segreto","ein Geheimnis"],
+  spider:["a spider","une araignée","una araña","un ragno","eine Spinne"],
+  melody:["a melody","une mélodie","una melodía","una melodia","eine Melodie"],
+  forgetting:["forgetting","l'oubli","el olvido","dimenticare","das Vergessen"],
+  festival:["a festival","une fête","una fiesta","una festa","ein Fest"],
+  distance:["distance","la distance","la distancia","la distanza","die Entfernung"],
+  habit:["a habit","une habitude","una costumbre","un'abitudine","eine Gewohnheit"],
+  snail:["a snail","un escargot","un caracol","una chiocciola","eine Schnecke"],
+  map:["a map","une carte","un mapa","una mappa","eine Landkarte"],
+  needle:["a needle","une aiguille","una aguja","un ago","eine Nadel"],
+  cloud:["a cloud","un nuage","una nube","una nuvola","eine Wolke"],
+  egg:["an egg","un œuf","un huevo","un uovo","ein Ei"],
+  door:["a door","une porte","una puerta","una porta","eine Tür"],
+  honey:["honey","le miel","la miel","il miele","Honig"],
+  knife:["a knife","un couteau","un cuchillo","un coltello","ein Messer"],
+  stone:["a stone","une pierre","una piedra","una pietra","ein Stein"],
+  letter:["a letter","une lettre","una carta","una lettera","ein Brief"],
+  rope:["a rope","une corde","una cuerda","una corda","ein Seil"],
+  moon:["the moon","la lune","la luna","la luna","der Mond"],
+  fish:["a fish","un poisson","un pez","un pesce","ein Fisch"],
+  basket:["a basket","un panier","una cesta","un cesto","ein Korb"],
+  tooth:["a tooth","une dent","un diente","un dente","ein Zahn"],
+  rain:["rain","la pluie","la lluvia","la pioggia","Regen"],
+  seed:["a seed","une graine","una semilla","un seme","ein Samen"],
+  trust:["trust","la confiance","la confianza","la fiducia","Vertrauen"],
+  bread:["bread","le pain","el pan","il pane","Brot"],
+  luck:["luck","la chance","la suerte","la fortuna","Glück"],
+  sand:["sand","le sable","la arena","la sabbia","Sand"],
+  waiting:["waiting","l'attente","la espera","l'attesa","das Warten"],
+  cup:["a cup","une tasse","una taza","una tazza","eine Tasse"],
+  silence:["silence","le silence","el silencio","il silenzio","Stille"],
+  bird:["a bird","un oiseau","un pájaro","un uccello","ein Vogel"],
+  past:["the past","le passé","el pasado","il passato","die Vergangenheit"],
+  tree:["a tree","un arbre","un árbol","un albero","ein Baum"],
+  journey:["a journey","un voyage","un viaje","un viaggio","eine Reise"],
+  ant:["an ant","une fourmi","una hormiga","una formica","eine Ameise"],
+  promise:["a promise","une promesse","una promesa","una promessa","ein Versprechen"],
+  wind:["wind","le vent","el viento","il vento","Wind"],
+  childhood:["childhood","l'enfance","la infancia","l'infanzia","die Kindheit"],
+  balance:["balance","l'équilibre","el equilibrio","l'equilibrio","das Gleichgewicht"],
+  friendship:["friendship","l'amitié","la amistad","l'amicizia","Freundschaft"],
+  harvest:["a harvest","une récolte","una cosecha","un raccolto","eine Ernte"],
+  echo:["an echo","un écho","un eco","un'eco","ein Echo"],
+  memory:["memory","la mémoire","la memoria","la memoria","die Erinnerung"],
+  shadow:["a shadow","une ombre","una sombra","un'ombra","ein Schatten"]
+};
+const LI = {en:0,fr:1,es:2,it:3,de:4};
+const word = k => C[k][LI[L]] || C[k][0];
+
+// Levels: cc = concrete + concrete, ca = concrete + abstract, aa = abstract + abstract.
+const CORE = [
+  {id:"c1",a:"bee",b:"mirror",level:"cc"},{id:"c2",a:"salt",b:"clock",level:"cc"},
+  {id:"c3",a:"river",b:"secret",level:"ca"},{id:"c4",a:"spider",b:"melody",level:"ca"},
+  {id:"c5",a:"forgetting",b:"festival",level:"aa"},{id:"c6",a:"distance",b:"habit",level:"aa"}
+];
+const POOL = [
+  {id:"p01",a:"snail",b:"map",level:"cc"},{id:"p02",a:"needle",b:"cloud",level:"cc"},
+  {id:"p03",a:"egg",b:"door",level:"cc"},{id:"p04",a:"honey",b:"knife",level:"cc"},
+  {id:"p05",a:"stone",b:"letter",level:"cc"},{id:"p06",a:"rope",b:"moon",level:"cc"},
+  {id:"p07",a:"fish",b:"basket",level:"cc"},{id:"p08",a:"tooth",b:"rain",level:"cc"},
+  {id:"p09",a:"seed",b:"trust",level:"ca"},{id:"p10",a:"bread",b:"luck",level:"ca"},
+  {id:"p11",a:"sand",b:"waiting",level:"ca"},{id:"p12",a:"cup",b:"silence",level:"ca"},
+  {id:"p13",a:"bird",b:"past",level:"ca"},{id:"p14",a:"tree",b:"journey",level:"ca"},
+  {id:"p15",a:"ant",b:"promise",level:"ca"},{id:"p16",a:"wind",b:"childhood",level:"ca"},
+  {id:"p17",a:"luck",b:"balance",level:"aa"},{id:"p18",a:"friendship",b:"harvest",level:"aa"},
+  {id:"p19",a:"waiting",b:"echo",level:"aa"},{id:"p20",a:"past",b:"silence",level:"aa"},
+  {id:"p21",a:"childhood",b:"promise",level:"aa"},{id:"p22",a:"memory",b:"journey",level:"aa"},
+  {id:"p23",a:"trust",b:"shadow",level:"aa"},{id:"p24",a:"shadow",b:"friendship",level:"aa"}
+];
+
+// Placeholder AI answers for the core, per language. The live version asks real models in each language,
+// with exactly the instructions players see, and records which model wrote each answer.
+const AI = {
+  en:{c1:"A bee sees the world in fragments through its compound eyes, a bit like a broken mirror that reflects many small pictures at once.",
+      c2:"Salt keeps food from changing, so in a way it slows time. A clock does the opposite: it makes the passing of time visible.",
+      c3:"A river hides most of what it carries beneath the surface and keeps moving, the way a secret is carried quietly from one person to the next.",
+      c4:"A spider's web vibrates when touched, and the spider reads those vibrations like notes. A melody is also a pattern of vibrations that tells you something.",
+      c5:"A festival is often a way of remembering, but it also gives people permission to forget their worries for a while.",
+      c6:"Distance changes habits: when you move away from someone, the small rituals you shared slowly fade or turn into new ones."},
+  fr:{c1:"Une abeille voit le monde en fragments avec ses yeux composés, un peu comme un miroir brisé qui renvoie beaucoup de petites images à la fois.",
+      c2:"Le sel empêche les aliments de changer, il ralentit donc le temps. Une horloge fait l'inverse : elle rend le passage du temps visible.",
+      c3:"Une rivière cache sous sa surface presque tout ce qu'elle transporte et continue d'avancer, comme un secret qui passe en silence d'une personne à l'autre.",
+      c4:"La toile d'une araignée vibre quand on la touche, et l'araignée lit ces vibrations comme des notes. Une mélodie est aussi une suite de vibrations qui dit quelque chose.",
+      c5:"Une fête est souvent une façon de se souvenir, mais elle permet aussi d'oublier ses soucis pour un moment.",
+      c6:"La distance change les habitudes : quand on s'éloigne de quelqu'un, les petits rituels partagés s'effacent ou deviennent autre chose."},
+  es:{c1:"Una abeja ve el mundo en fragmentos con sus ojos compuestos, un poco como un espejo roto que refleja muchas imágenes pequeñas a la vez.",
+      c2:"La sal impide que la comida cambie, así que en cierto modo frena el tiempo. Un reloj hace lo contrario: hace visible el paso del tiempo.",
+      c3:"Un río esconde bajo la superficie casi todo lo que lleva y sigue avanzando, como un secreto que pasa en silencio de una persona a otra.",
+      c4:"La tela de una araña vibra cuando se toca, y la araña lee esas vibraciones como notas. Una melodía también es un patrón de vibraciones que dice algo.",
+      c5:"Una fiesta suele ser una forma de recordar, pero también permite olvidar las preocupaciones por un rato.",
+      c6:"La distancia cambia las costumbres: cuando te alejas de alguien, los pequeños rituales compartidos se apagan o se transforman."},
+  it:{c1:"Un'ape vede il mondo a frammenti con i suoi occhi composti, un po' come uno specchio rotto che riflette tante piccole immagini insieme.",
+      c2:"Il sale impedisce al cibo di cambiare, quindi in un certo senso rallenta il tempo. Un orologio fa il contrario: rende visibile il passare del tempo.",
+      c3:"Un fiume nasconde sotto la superficie quasi tutto ciò che trasporta e continua a scorrere, come un segreto che passa in silenzio da una persona all'altra.",
+      c4:"La tela di un ragno vibra quando viene toccata, e il ragno legge quelle vibrazioni come note. Anche una melodia è una sequenza di vibrazioni che comunica qualcosa.",
+      c5:"Una festa è spesso un modo per ricordare, ma permette anche di dimenticare le preoccupazioni per un po'.",
+      c6:"La distanza cambia le abitudini: quando ti allontani da qualcuno, i piccoli rituali condivisi svaniscono o diventano altro."},
+  de:{c1:"Eine Biene sieht die Welt mit ihren Facettenaugen in Bruchstücken, ein bisschen wie ein zerbrochener Spiegel, der viele kleine Bilder zugleich zeigt.",
+      c2:"Salz hält Lebensmittel unverändert und bremst so gewissermaßen die Zeit. Eine Uhr tut das Gegenteil: Sie macht das Vergehen der Zeit sichtbar.",
+      c3:"Ein Fluss verbirgt das meiste, was er trägt, unter der Oberfläche und fließt weiter, so wie ein Geheimnis still von einem Menschen zum nächsten wandert.",
+      c4:"Das Netz einer Spinne vibriert bei Berührung, und die Spinne liest diese Schwingungen wie Töne. Auch eine Melodie ist ein Muster aus Schwingungen, das etwas mitteilt.",
+      c5:"Ein Fest ist oft eine Art, sich zu erinnern, aber es erlaubt auch, die Sorgen eine Weile zu vergessen.",
+      c6:"Entfernung verändert Gewohnheiten: Wenn man sich von jemandem entfernt, verblassen die kleinen gemeinsamen Rituale oder werden zu neuen."}
+};
+
+// Interface text.
+const T = {
+en:{welcomeH1:"Find the bridge between two ideas.", welcomeP:"You will see two ideas. Write how you would get from one to the other. Any connection works, short or long. There is no wrong answer.", welcomeSmall:"Six pairs, about ten minutes. You can keep going after that if you enjoy it.",
+  keepH2:"What we keep", keep1:"Your answers and the stepping stones you add.", keep2:"How you play, such as timing and the buttons you use. Spoken answers are saved as text, never as audio.", keep3:"Nothing that identifies you: no name, email, cookies or IP address. You can stop at any time.",
+  study:"Answers are used, without names, in a research study on how people connect ideas. You will find out more at the end. Anonymous results may be published later. A random player code is kept on your device so you can come back and continue.",
+  age:"I am 18 or older.", consent:"I agree to take part.", start:"Start", haveCode:"I have a player code", codeLabel:"Your player code", codePh:"for example, river-bee-42", codeNote:"In the live version this brings back your bridges from any device.", cont:"Continue",
+  wbTag:"Welcome back", built:n=>`You have built ${n} ${n===1?"bridge":"bridges"}.`, wbP:"Pick up where you left off. You will only see pairs you haven't answered yet.", seeMine:"See my bridges", yourCode:"Your player code:",
+  mineH2:"My bridges", none:"No bridges yet.", keepBuilding:"Keep building", delAll:"Delete all my answers", delConfirm:c=>`This removes every bridge saved under ${c}. It can't be undone.`, delYes:"Delete everything", delNo:"Keep them", deleted:"Your answers have been deleted.", deletedP:"Thank you for taking part.",
+  pairOf:(i,n)=>`Pair ${i} of ${n}`, openPlay:"Open play", done:"I'm done", question:"How do you get from one to the other?", ansPh:"Write or say whatever comes to mind.", speak:"Speak instead", listening:"Listening… tap to stop", noVoice:"Voice isn't available here. Your keyboard's own mic button works too.",
+  stones:"Stepping stones", stonesHint:"(optional) the ideas you passed through on the way", first:"first", then:"then", next:"Next", askAI:"Ask an AI instead", skip:"Skip this pair",
+  aiTag:"An AI's bridge", aiHintChoose:"You can use it, adapt it, or ignore it and write your own.", aiHintAfter:"Here is what an AI wrote for the same pair.", aiPending:"In the live version, an AI's answer for this pair appears here.",
+  yourBridge:"Your bridge", changeQ:"Would you like to change yours?", keepMine:"Keep mine and continue", saveChanges:"Save my changes",
+  coreTag:"First six done", coreP:"You can stop here, or keep going with new pairs for as long as you enjoy it.", keepGoing:"Keep going", finishHere:"Finish here",
+  qH2:"A few quick questions", before:"Have you played Bridges before, on this or another device?", beforeNo:"No, this is my first time", beforeYes:"Yes",
+  ext:"Did you use any AI tool outside this page while answering? Either answer is fine.", extNo:"No", extSome:"For some answers", extMost:"For most answers", extSkip:"I'd rather not say",
+  field:"Your main field", optional:"(optional)", fieldPh:"for example, biology, music, engineering",
+  fbH2:"How was it?", fbSmall:"Optional. It helps make the next version better.", fbQ:"Anything you'd like to tell us?", fbPh:"What was fun, confusing, too long…", mailQ:"Want the results?", mailPh:"your email", mailNote:"Your email is stored on its own, never linked to your answers, and used only to send the results once.", send:"Send", skipBtn:"Skip",
+  thanksH2:"Thank you.", thanksP:(a,b)=>`You built ${a} ${a===1?"bridge":"bridges"} this time, ${b} in total.`,
+  aboutTag:"What this was about", aboutP:"Bridges is part of Epistemic Bridges, a study that compares how people and AI systems connect distant ideas. We look at how varied the bridges are, which stepping stones people choose, whether the direction of the arrow matters, and how seeing an AI's answer changes our own. That is why the page recorded whether you asked for an AI's answer.", aboutNote:"Please don't share these details with people before they play, so their answers stay their own.",
+  codeTag:"Your player code", codeNote:"Keep it to come back on another device, or to delete your answers later. On this device the game remembers you.", playMore:"Play more", seeAll:"See all my bridges"},
+fr:{welcomeH1:"Trouvez le pont entre deux idées.", welcomeP:"Vous verrez deux idées. Écrivez comment vous iriez de l'une à l'autre. Tout lien fonctionne, court ou long. Il n'y a pas de mauvaise réponse.", welcomeSmall:"Six paires, environ dix minutes. Vous pouvez continuer ensuite si cela vous plaît.",
+  keepH2:"Ce que nous gardons", keep1:"Vos réponses et les étapes que vous ajoutez.", keep2:"Votre façon de jouer, comme le temps passé et les boutons utilisés. Les réponses dites à voix haute sont gardées en texte, jamais en audio.", keep3:"Rien qui vous identifie : ni nom, ni e-mail, ni cookies, ni adresse IP. Vous pouvez arrêter à tout moment.",
+  study:"Les réponses sont utilisées, sans nom, dans une étude sur la façon dont les gens relient les idées. Vous en saurez plus à la fin. Des résultats anonymes pourront être publiés. Un code de joueur aléatoire est gardé sur votre appareil pour que vous puissiez revenir.",
+  age:"J'ai 18 ans ou plus.", consent:"J'accepte de participer.", start:"Commencer", haveCode:"J'ai un code de joueur", codeLabel:"Votre code de joueur", codePh:"par exemple, river-bee-42", codeNote:"Dans la version finale, cela retrouve vos ponts depuis n'importe quel appareil.", cont:"Continuer",
+  wbTag:"Bon retour", built:n=>`Vous avez construit ${n} ${n===1?"pont":"ponts"}.`, wbP:"Reprenez là où vous vous êtes arrêté. Vous ne verrez que des paires nouvelles.", seeMine:"Voir mes ponts", yourCode:"Votre code de joueur :",
+  mineH2:"Mes ponts", none:"Pas encore de ponts.", keepBuilding:"Continuer à construire", delAll:"Supprimer toutes mes réponses", delConfirm:c=>`Cela supprime tous les ponts enregistrés sous ${c}. C'est définitif.`, delYes:"Tout supprimer", delNo:"Les garder", deleted:"Vos réponses ont été supprimées.", deletedP:"Merci d'avoir participé.",
+  pairOf:(i,n)=>`Paire ${i} sur ${n}`, openPlay:"Jeu libre", done:"J'ai fini", question:"Comment passez-vous de l'une à l'autre ?", ansPh:"Écrivez ou dites ce qui vous vient.", speak:"Parler plutôt", listening:"J'écoute… touchez pour arrêter", noVoice:"La voix n'est pas disponible ici. Le micro de votre clavier fonctionne aussi.",
+  stones:"Étapes", stonesHint:"(facultatif) les idées par lesquelles vous êtes passé", first:"d'abord", then:"puis", next:"Suivant", askAI:"Demander à une IA", skip:"Passer cette paire",
+  aiTag:"Le pont d'une IA", aiHintChoose:"Vous pouvez l'utiliser, l'adapter, ou l'ignorer et écrire le vôtre.", aiHintAfter:"Voici ce qu'une IA a écrit pour la même paire.", aiPending:"Dans la version finale, la réponse d'une IA pour cette paire apparaît ici.",
+  yourBridge:"Votre pont", changeQ:"Voulez-vous modifier le vôtre ?", keepMine:"Garder le mien et continuer", saveChanges:"Enregistrer mes modifications",
+  coreTag:"Les six premières, c'est fait", coreP:"Vous pouvez vous arrêter ici, ou continuer avec de nouvelles paires aussi longtemps que vous voulez.", keepGoing:"Continuer", finishHere:"Terminer ici",
+  qH2:"Quelques questions rapides", before:"Avez-vous déjà joué à Bridges, sur cet appareil ou un autre ?", beforeNo:"Non, c'est la première fois", beforeYes:"Oui",
+  ext:"Avez-vous utilisé un outil d'IA en dehors de cette page pour répondre ? Les deux réponses conviennent.", extNo:"Non", extSome:"Pour certaines réponses", extMost:"Pour la plupart des réponses", extSkip:"Je préfère ne pas répondre",
+  field:"Votre domaine principal", optional:"(facultatif)", fieldPh:"par exemple, biologie, musique, ingénierie",
+  fbH2:"Comment c'était ?", fbSmall:"Facultatif. Cela aide à améliorer la prochaine version.", fbQ:"Quelque chose à nous dire ?", fbPh:"Ce qui était amusant, confus, trop long…", mailQ:"Recevoir les résultats ?", mailPh:"votre e-mail", mailNote:"Votre e-mail est gardé à part, jamais relié à vos réponses, et sert uniquement à envoyer les résultats une fois.", send:"Envoyer", skipBtn:"Passer",
+  thanksH2:"Merci.", thanksP:(a,b)=>`Vous avez construit ${a} ${a===1?"pont":"ponts"} cette fois, ${b} en tout.`,
+  aboutTag:"De quoi il s'agissait", aboutP:"Bridges fait partie d'Epistemic Bridges, une étude qui compare la façon dont les personnes et les systèmes d'IA relient des idées éloignées. Nous regardons la variété des ponts, les étapes choisies, si le sens de la flèche compte, et comment voir la réponse d'une IA change la nôtre. C'est pourquoi la page a noté si vous avez demandé la réponse d'une IA.", aboutNote:"Merci de ne pas partager ces détails avec des personnes avant qu'elles jouent, pour que leurs réponses restent les leurs.",
+  codeTag:"Votre code de joueur", codeNote:"Gardez-le pour revenir depuis un autre appareil, ou pour supprimer vos réponses plus tard. Sur cet appareil, le jeu se souvient de vous.", playMore:"Jouer encore", seeAll:"Voir tous mes ponts"},
+es:{welcomeH1:"Encuentra el puente entre dos ideas.", welcomeP:"Verás dos ideas. Escribe cómo irías de una a la otra. Cualquier conexión vale, corta o larga. No hay respuestas incorrectas.", welcomeSmall:"Seis pares, unos diez minutos. Después puedes seguir si te gusta.",
+  keepH2:"Qué guardamos", keep1:"Tus respuestas y los pasos intermedios que añadas.", keep2:"Cómo juegas, por ejemplo el tiempo y los botones que usas. Las respuestas habladas se guardan como texto, nunca como audio.", keep3:"Nada que te identifique: ni nombre, ni correo, ni cookies, ni dirección IP. Puedes parar cuando quieras.",
+  study:"Las respuestas se usan, sin nombres, en un estudio sobre cómo las personas conectan ideas. Al final sabrás más. Los resultados anónimos podrían publicarse. Se guarda en tu dispositivo un código de jugador aleatorio para que puedas volver y seguir.",
+  age:"Tengo 18 años o más.", consent:"Acepto participar.", start:"Empezar", haveCode:"Tengo un código de jugador", codeLabel:"Tu código de jugador", codePh:"por ejemplo, river-bee-42", codeNote:"En la versión final, esto recupera tus puentes desde cualquier dispositivo.", cont:"Continuar",
+  wbTag:"Bienvenida de nuevo", built:n=>`Has construido ${n} ${n===1?"puente":"puentes"}.`, wbP:"Sigue donde lo dejaste. Solo verás pares que aún no has respondido.", seeMine:"Ver mis puentes", yourCode:"Tu código de jugador:",
+  mineH2:"Mis puentes", none:"Aún no hay puentes.", keepBuilding:"Seguir construyendo", delAll:"Borrar todas mis respuestas", delConfirm:c=>`Esto borra todos los puentes guardados con ${c}. No se puede deshacer.`, delYes:"Borrar todo", delNo:"Conservarlos", deleted:"Tus respuestas se han borrado.", deletedP:"Gracias por participar.",
+  pairOf:(i,n)=>`Par ${i} de ${n}`, openPlay:"Juego libre", done:"He terminado", question:"¿Cómo llegas de una a la otra?", ansPh:"Escribe o di lo que se te ocurra.", speak:"Hablar", listening:"Escuchando… toca para parar", noVoice:"La voz no está disponible aquí. El micrófono de tu teclado también funciona.",
+  stones:"Pasos intermedios", stonesHint:"(opcional) las ideas por las que pasaste", first:"primero", then:"luego", next:"Siguiente", askAI:"Pedírselo a una IA", skip:"Saltar este par",
+  aiTag:"El puente de una IA", aiHintChoose:"Puedes usarlo, adaptarlo, o ignorarlo y escribir el tuyo.", aiHintAfter:"Esto es lo que escribió una IA para el mismo par.", aiPending:"En la versión final, aquí aparece la respuesta de una IA para este par.",
+  yourBridge:"Tu puente", changeQ:"¿Quieres cambiar el tuyo?", keepMine:"Mantener el mío y seguir", saveChanges:"Guardar mis cambios",
+  coreTag:"Los seis primeros, listos", coreP:"Puedes parar aquí, o seguir con pares nuevos todo el tiempo que quieras.", keepGoing:"Seguir", finishHere:"Terminar aquí",
+  qH2:"Unas preguntas rápidas", before:"¿Has jugado a Bridges antes, en este u otro dispositivo?", beforeNo:"No, es la primera vez", beforeYes:"Sí",
+  ext:"¿Usaste alguna herramienta de IA fuera de esta página para responder? Cualquier respuesta está bien.", extNo:"No", extSome:"Para algunas respuestas", extMost:"Para la mayoría", extSkip:"Prefiero no decirlo",
+  field:"Tu campo principal", optional:"(opcional)", fieldPh:"por ejemplo, biología, música, ingeniería",
+  fbH2:"¿Qué tal fue?", fbSmall:"Opcional. Ayuda a mejorar la próxima versión.", fbQ:"¿Algo que quieras contarnos?", fbPh:"Qué fue divertido, confuso, demasiado largo…", mailQ:"¿Quieres los resultados?", mailPh:"tu correo", mailNote:"Tu correo se guarda aparte, nunca unido a tus respuestas, y solo se usa para enviarte los resultados una vez.", send:"Enviar", skipBtn:"Saltar",
+  thanksH2:"Gracias.", thanksP:(a,b)=>`Construiste ${a} ${a===1?"puente":"puentes"} esta vez, ${b} en total.`,
+  aboutTag:"De qué se trataba", aboutP:"Bridges forma parte de Epistemic Bridges, un estudio que compara cómo las personas y los sistemas de IA conectan ideas lejanas. Observamos qué tan variados son los puentes, qué pasos intermedios se eligen, si importa la dirección de la flecha, y cómo cambia nuestra respuesta al ver la de una IA. Por eso la página registró si pediste la respuesta de una IA.", aboutNote:"Por favor, no compartas estos detalles con otras personas antes de que jueguen, para que sus respuestas sigan siendo suyas.",
+  codeTag:"Tu código de jugador", codeNote:"Guárdalo para volver desde otro dispositivo o para borrar tus respuestas más adelante. En este dispositivo el juego te recuerda.", playMore:"Jugar más", seeAll:"Ver todos mis puentes"},
+it:{welcomeH1:"Trova il ponte tra due idee.", welcomeP:"Vedrai due idee. Scrivi come andresti dall'una all'altra. Qualsiasi collegamento va bene, breve o lungo. Non ci sono risposte sbagliate.", welcomeSmall:"Sei coppie, circa dieci minuti. Poi puoi continuare se ti piace.",
+  keepH2:"Cosa conserviamo", keep1:"Le tue risposte e le tappe intermedie che aggiungi.", keep2:"Come giochi, per esempio i tempi e i pulsanti che usi. Le risposte a voce sono salvate come testo, mai come audio.", keep3:"Niente che ti identifichi: niente nome, e-mail, cookie o indirizzo IP. Puoi smettere in qualsiasi momento.",
+  study:"Le risposte sono usate, senza nomi, in uno studio su come le persone collegano le idee. Alla fine saprai di più. I risultati anonimi potrebbero essere pubblicati. Un codice giocatore casuale resta sul tuo dispositivo per permetterti di tornare.",
+  age:"Ho 18 anni o più.", consent:"Accetto di partecipare.", start:"Inizia", haveCode:"Ho un codice giocatore", codeLabel:"Il tuo codice giocatore", codePh:"per esempio, river-bee-42", codeNote:"Nella versione finale questo recupera i tuoi ponti da qualsiasi dispositivo.", cont:"Continua",
+  wbTag:"Bentornata", built:n=>`Hai costruito ${n} ${n===1?"ponte":"ponti"}.`, wbP:"Riprendi da dove avevi lasciato. Vedrai solo coppie a cui non hai ancora risposto.", seeMine:"Vedi i miei ponti", yourCode:"Il tuo codice giocatore:",
+  mineH2:"I miei ponti", none:"Ancora nessun ponte.", keepBuilding:"Continua a costruire", delAll:"Cancella tutte le mie risposte", delConfirm:c=>`Questo cancella tutti i ponti salvati con ${c}. Non si può annullare.`, delYes:"Cancella tutto", delNo:"Conservali", deleted:"Le tue risposte sono state cancellate.", deletedP:"Grazie per aver partecipato.",
+  pairOf:(i,n)=>`Coppia ${i} di ${n}`, openPlay:"Gioco libero", done:"Ho finito", question:"Come arrivi dall'una all'altra?", ansPh:"Scrivi o di' quello che ti viene in mente.", speak:"Parla", listening:"Ti ascolto… tocca per fermare", noVoice:"La voce non è disponibile qui. Funziona anche il microfono della tastiera.",
+  stones:"Tappe intermedie", stonesHint:"(facoltativo) le idee che hai attraversato", first:"prima", then:"poi", next:"Avanti", askAI:"Chiedi a un'IA", skip:"Salta questa coppia",
+  aiTag:"Il ponte di un'IA", aiHintChoose:"Puoi usarlo, adattarlo, o ignorarlo e scrivere il tuo.", aiHintAfter:"Ecco cosa ha scritto un'IA per la stessa coppia.", aiPending:"Nella versione finale qui appare la risposta di un'IA per questa coppia.",
+  yourBridge:"Il tuo ponte", changeQ:"Vuoi cambiare il tuo?", keepMine:"Tengo il mio e continuo", saveChanges:"Salva le modifiche",
+  coreTag:"Prime sei fatte", coreP:"Puoi fermarti qui, o continuare con nuove coppie finché ti va.", keepGoing:"Continua", finishHere:"Finisci qui",
+  qH2:"Qualche domanda veloce", before:"Hai già giocato a Bridges, su questo o un altro dispositivo?", beforeNo:"No, è la prima volta", beforeYes:"Sì",
+  ext:"Hai usato strumenti di IA fuori da questa pagina per rispondere? Va bene in entrambi i casi.", extNo:"No", extSome:"Per alcune risposte", extMost:"Per la maggior parte", extSkip:"Preferisco non dirlo",
+  field:"Il tuo campo principale", optional:"(facoltativo)", fieldPh:"per esempio, biologia, musica, ingegneria",
+  fbH2:"Com'è andata?", fbSmall:"Facoltativo. Aiuta a migliorare la prossima versione.", fbQ:"Qualcosa da dirci?", fbPh:"Cosa è stato divertente, confuso, troppo lungo…", mailQ:"Vuoi i risultati?", mailPh:"la tua e-mail", mailNote:"La tua e-mail è conservata a parte, mai collegata alle tue risposte, e usata solo per inviarti i risultati una volta.", send:"Invia", skipBtn:"Salta",
+  thanksH2:"Grazie.", thanksP:(a,b)=>`Hai costruito ${a} ${a===1?"ponte":"ponti"} questa volta, ${b} in tutto.`,
+  aboutTag:"Di cosa si trattava", aboutP:"Bridges fa parte di Epistemic Bridges, uno studio che confronta come le persone e i sistemi di IA collegano idee lontane. Guardiamo quanto sono vari i ponti, quali tappe vengono scelte, se conta la direzione della freccia, e come vedere la risposta di un'IA cambia la nostra. Per questo la pagina ha registrato se hai chiesto la risposta di un'IA.", aboutNote:"Per favore non condividere questi dettagli con altre persone prima che giochino, così le loro risposte restano loro.",
+  codeTag:"Il tuo codice giocatore", codeNote:"Conservalo per tornare da un altro dispositivo o per cancellare le tue risposte in seguito. Su questo dispositivo il gioco si ricorda di te.", playMore:"Gioca ancora", seeAll:"Vedi tutti i miei ponti"},
+de:{welcomeH1:"Finde die Brücke zwischen zwei Ideen.", welcomeP:"Du siehst zwei Ideen. Schreib, wie du von der einen zur anderen kommst. Jede Verbindung zählt, kurz oder lang. Es gibt keine falsche Antwort.", welcomeSmall:"Sechs Paare, etwa zehn Minuten. Danach kannst du weitermachen, wenn es dir gefällt.",
+  keepH2:"Was wir speichern", keep1:"Deine Antworten und die Zwischenschritte, die du angibst.", keep2:"Wie du spielst, etwa die Zeit und die Knöpfe, die du benutzt. Gesprochene Antworten werden als Text gespeichert, nie als Audio.", keep3:"Nichts, was dich identifiziert: kein Name, keine E-Mail, keine Cookies, keine IP-Adresse. Du kannst jederzeit aufhören.",
+  study:"Die Antworten werden ohne Namen in einer Studie darüber verwendet, wie Menschen Ideen verbinden. Am Ende erfährst du mehr. Anonyme Ergebnisse können später veröffentlicht werden. Ein zufälliger Spielercode bleibt auf deinem Gerät, damit du zurückkommen kannst.",
+  age:"Ich bin 18 Jahre oder älter.", consent:"Ich bin mit der Teilnahme einverstanden.", start:"Los geht's", haveCode:"Ich habe einen Spielercode", codeLabel:"Dein Spielercode", codePh:"zum Beispiel river-bee-42", codeNote:"In der fertigen Version holt das deine Brücken auf jedes Gerät zurück.", cont:"Weiter",
+  wbTag:"Willkommen zurück", built:n=>`Du hast ${n} ${n===1?"Brücke":"Brücken"} gebaut.`, wbP:"Mach dort weiter, wo du aufgehört hast. Du siehst nur Paare, die du noch nicht beantwortet hast.", seeMine:"Meine Brücken ansehen", yourCode:"Dein Spielercode:",
+  mineH2:"Meine Brücken", none:"Noch keine Brücken.", keepBuilding:"Weiterbauen", delAll:"Alle meine Antworten löschen", delConfirm:c=>`Damit werden alle unter ${c} gespeicherten Brücken gelöscht. Das lässt sich nicht rückgängig machen.`, delYes:"Alles löschen", delNo:"Behalten", deleted:"Deine Antworten wurden gelöscht.", deletedP:"Danke fürs Mitmachen.",
+  pairOf:(i,n)=>`Paar ${i} von ${n}`, openPlay:"Freies Spiel", done:"Ich bin fertig", question:"Wie kommst du von der einen zur anderen?", ansPh:"Schreib oder sag, was dir einfällt.", speak:"Lieber sprechen", listening:"Ich höre zu… tippen zum Stoppen", noVoice:"Sprache ist hier nicht verfügbar. Das Mikrofon deiner Tastatur funktioniert auch.",
+  stones:"Zwischenschritte", stonesHint:"(optional) die Ideen, über die du gegangen bist", first:"zuerst", then:"dann", next:"Weiter", askAI:"Lieber eine KI fragen", skip:"Dieses Paar überspringen",
+  aiTag:"Die Brücke einer KI", aiHintChoose:"Du kannst sie nutzen, anpassen oder ignorieren und deine eigene schreiben.", aiHintAfter:"Das hat eine KI für dasselbe Paar geschrieben.", aiPending:"In der fertigen Version erscheint hier die Antwort einer KI für dieses Paar.",
+  yourBridge:"Deine Brücke", changeQ:"Möchtest du deine ändern?", keepMine:"Meine behalten und weiter", saveChanges:"Änderungen speichern",
+  coreTag:"Die ersten sechs sind geschafft", coreP:"Du kannst hier aufhören oder mit neuen Paaren weitermachen, solange es dir Spaß macht.", keepGoing:"Weitermachen", finishHere:"Hier aufhören",
+  qH2:"Ein paar kurze Fragen", before:"Hast du Bridges schon einmal gespielt, auf diesem oder einem anderen Gerät?", beforeNo:"Nein, zum ersten Mal", beforeYes:"Ja",
+  ext:"Hast du außerhalb dieser Seite ein KI-Werkzeug zum Antworten benutzt? Beide Antworten sind in Ordnung.", extNo:"Nein", extSome:"Für manche Antworten", extMost:"Für die meisten", extSkip:"Möchte ich nicht sagen",
+  field:"Dein Hauptgebiet", optional:"(optional)", fieldPh:"zum Beispiel Biologie, Musik, Technik",
+  fbH2:"Wie war's?", fbSmall:"Optional. Es hilft, die nächste Version besser zu machen.", fbQ:"Möchtest du uns etwas sagen?", fbPh:"Was hat Spaß gemacht, was war unklar, zu lang…", mailQ:"Möchtest du die Ergebnisse?", mailPh:"deine E-Mail", mailNote:"Deine E-Mail wird getrennt gespeichert, nie mit deinen Antworten verknüpft und nur einmal zum Senden der Ergebnisse verwendet.", send:"Senden", skipBtn:"Überspringen",
+  thanksH2:"Danke.", thanksP:(a,b)=>`Du hast diesmal ${a} ${a===1?"Brücke":"Brücken"} gebaut, ${b} insgesamt.`,
+  aboutTag:"Worum es ging", aboutP:"Bridges ist Teil von Epistemic Bridges, einer Studie, die vergleicht, wie Menschen und KI-Systeme weit entfernte Ideen verbinden. Wir schauen, wie vielfältig die Brücken sind, welche Zwischenschritte gewählt werden, ob die Richtung des Pfeils eine Rolle spielt und wie die Antwort einer KI unsere eigene verändert. Deshalb hat die Seite festgehalten, ob du eine KI-Antwort angefordert hast.", aboutNote:"Bitte erzähl anderen vor dem Spielen nichts davon, damit ihre Antworten ihre eigenen bleiben.",
+  codeTag:"Dein Spielercode", codeNote:"Heb ihn auf, um von einem anderen Gerät zurückzukommen oder deine Antworten später zu löschen. Auf diesem Gerät erinnert sich das Spiel an dich.", playMore:"Weiterspielen", seeAll:"Alle meine Brücken ansehen"}
+};
+// Leaving a shared device: the answers stay saved under the code; only this device forgets it.
+const LEAVE = {
+  en:{notYou:"Not you? Start as a new player", leave:"Leave and forget this device", leaveP:c=>`This device will forget you. Your bridges stay saved under ${c}, so write it down if you want to come back.`, leaveYes:"Leave", leaveNo:"Stay"},
+  fr:{notYou:"Ce n'est pas vous ? Nouveau joueur", leave:"Partir et faire oublier cet appareil", leaveP:c=>`Cet appareil va vous oublier. Vos ponts restent enregistrés sous ${c} : notez-le si vous voulez revenir.`, leaveYes:"Partir", leaveNo:"Rester"},
+  es:{notYou:"¿No eres tú? Nuevo jugador", leave:"Salir y que este dispositivo me olvide", leaveP:c=>`Este dispositivo te olvidará. Tus puentes siguen guardados con ${c}: anótalo si quieres volver.`, leaveYes:"Salir", leaveNo:"Quedarme"},
+  it:{notYou:"Non sei tu? Nuovo giocatore", leave:"Esci e fai dimenticare questo dispositivo", leaveP:c=>`Questo dispositivo ti dimenticherà. I tuoi ponti restano salvati con ${c}: annotalo se vuoi tornare.`, leaveYes:"Esci", leaveNo:"Resta"},
+  de:{notYou:"Nicht du? Neu anfangen", leave:"Abmelden und dieses Gerät vergessen lassen", leaveP:c=>`Dieses Gerät vergisst dich. Deine Brücken bleiben unter ${c} gespeichert, schreib ihn dir auf, wenn du zurückkommen willst.`, leaveYes:"Abmelden", leaveNo:"Bleiben"}
+};
+for(const l in LEAVE) Object.assign(T[l], LEAVE[l]);
+// Warm-up, difficulty tap and the revised end questions.
+const EXTRA = {
+  en:{wuTag:"Warm-up", wuH2:"First, a quick warm-up", wuP:"Write 10 words that are as different from each other as you can. Single words only, no names of people or places.", wuHint:"About two minutes.", wuCount:n=>`${n} of 10`, wuGo:"Start the pairs", wuSkip:"Skip the warm-up",
+    diffQ:"This one felt", easy:"easy", medium:"medium", hard:"hard", allOptional:"Every question is optional.",
+    aiFreq:"How often do you use AI tools like chatbots?", freqNever:"Never", freqMonth:"A few times a month", freqWeek:"Every week", freqDay:"Every day", prefer:"Prefer not to say",
+    aiFeel:"How do you feel about AI in everyday life?", feelConcern:"More concerned than excited", feelBoth:"Equally concerned and excited", feelExcited:"More excited than concerned",
+    firstLang:"Your first language", langOther:"Other", ageQ:"Your age", fieldQ:"Your main field",
+    arts:"Arts and humanities", sci:"Natural sciences", eng:"Engineering and technology", soc:"Social sciences", health:"Health", biz:"Business", edu:"Education", otherF:"Other",
+    cmpQ:"Compared with yours, the AI's bridges were…", weaker:"weaker", same:"about as good", stronger:"stronger", notsure:"Not sure",
+    ownQ:"How much do your bridges feel like your own ideas?", own1:"Not at all", own5:"Completely", fbH2:"How much did you enjoy it?"},
+  fr:{wuTag:"Échauffement", wuH2:"D'abord, un petit échauffement", wuP:"Écrivez 10 mots aussi différents les uns des autres que possible. Un seul mot à chaque fois, pas de noms de personnes ni de lieux.", wuHint:"Environ deux minutes.", wuCount:n=>`${n} sur 10`, wuGo:"Commencer les paires", wuSkip:"Passer l'échauffement",
+    diffQ:"Celle-ci était", easy:"facile", medium:"moyenne", hard:"difficile", allOptional:"Toutes les questions sont facultatives.",
+    aiFreq:"À quelle fréquence utilisez-vous des outils d'IA comme les chatbots ?", freqNever:"Jamais", freqMonth:"Quelques fois par mois", freqWeek:"Chaque semaine", freqDay:"Chaque jour", prefer:"Je préfère ne pas répondre",
+    aiFeel:"Que ressentez-vous face à l'IA au quotidien ?", feelConcern:"Plus d'inquiétude que d'enthousiasme", feelBoth:"Autant d'inquiétude que d'enthousiasme", feelExcited:"Plus d'enthousiasme que d'inquiétude",
+    firstLang:"Votre langue maternelle", langOther:"Autre", ageQ:"Votre âge", fieldQ:"Votre domaine principal",
+    arts:"Arts et lettres", sci:"Sciences de la nature", eng:"Ingénierie et technologie", soc:"Sciences sociales", health:"Santé", biz:"Économie et entreprise", edu:"Éducation", otherF:"Autre",
+    cmpQ:"Par rapport aux vôtres, les ponts de l'IA étaient…", weaker:"moins bons", same:"aussi bons", stronger:"meilleurs", notsure:"Je ne sais pas",
+    ownQ:"À quel point vos ponts vous semblent-ils être vos propres idées ?", own1:"Pas du tout", own5:"Complètement", fbH2:"Avez-vous aimé ?"},
+  es:{wuTag:"Calentamiento", wuH2:"Primero, un calentamiento rápido", wuP:"Escribe 10 palabras lo más distintas posible entre sí. Solo palabras sueltas, sin nombres de personas ni de lugares.", wuHint:"Unos dos minutos.", wuCount:n=>`${n} de 10`, wuGo:"Empezar los pares", wuSkip:"Saltar el calentamiento",
+    diffQ:"Este fue", easy:"fácil", medium:"medio", hard:"difícil", allOptional:"Todas las preguntas son opcionales.",
+    aiFreq:"¿Con qué frecuencia usas herramientas de IA como chatbots?", freqNever:"Nunca", freqMonth:"Algunas veces al mes", freqWeek:"Cada semana", freqDay:"Cada día", prefer:"Prefiero no decirlo",
+    aiFeel:"¿Qué sientes ante la IA en la vida cotidiana?", feelConcern:"Más preocupación que entusiasmo", feelBoth:"Tanta preocupación como entusiasmo", feelExcited:"Más entusiasmo que preocupación",
+    firstLang:"Tu lengua materna", langOther:"Otra", ageQ:"Tu edad", fieldQ:"Tu campo principal",
+    arts:"Artes y humanidades", sci:"Ciencias naturales", eng:"Ingeniería y tecnología", soc:"Ciencias sociales", health:"Salud", biz:"Empresa y economía", edu:"Educación", otherF:"Otro",
+    cmpQ:"Comparados con los tuyos, los puentes de la IA eran…", weaker:"peores", same:"igual de buenos", stronger:"mejores", notsure:"No lo sé",
+    ownQ:"¿Cuánto sientes que tus puentes son ideas tuyas?", own1:"Nada", own5:"Totalmente", fbH2:"¿Te gustó?"},
+  it:{wuTag:"Riscaldamento", wuH2:"Prima, un breve riscaldamento", wuP:"Scrivi 10 parole il più possibile diverse tra loro. Solo parole singole, niente nomi di persone o luoghi.", wuHint:"Circa due minuti.", wuCount:n=>`${n} di 10`, wuGo:"Inizia le coppie", wuSkip:"Salta il riscaldamento",
+    diffQ:"Questa era", easy:"facile", medium:"media", hard:"difficile", allOptional:"Tutte le domande sono facoltative.",
+    aiFreq:"Quanto spesso usi strumenti di IA come i chatbot?", freqNever:"Mai", freqMonth:"Qualche volta al mese", freqWeek:"Ogni settimana", freqDay:"Ogni giorno", prefer:"Preferisco non dirlo",
+    aiFeel:"Cosa provi verso l'IA nella vita quotidiana?", feelConcern:"Più preoccupazione che entusiasmo", feelBoth:"Tanta preoccupazione quanto entusiasmo", feelExcited:"Più entusiasmo che preoccupazione",
+    firstLang:"La tua lingua madre", langOther:"Altra", ageQ:"La tua età", fieldQ:"Il tuo campo principale",
+    arts:"Arti e discipline umanistiche", sci:"Scienze naturali", eng:"Ingegneria e tecnologia", soc:"Scienze sociali", health:"Salute", biz:"Economia e impresa", edu:"Istruzione", otherF:"Altro",
+    cmpQ:"Rispetto ai tuoi, i ponti dell'IA erano…", weaker:"peggiori", same:"più o meno uguali", stronger:"migliori", notsure:"Non so",
+    ownQ:"Quanto senti che i tuoi ponti sono idee tue?", own1:"Per niente", own5:"Del tutto", fbH2:"Ti è piaciuto?"},
+  de:{wuTag:"Aufwärmen", wuH2:"Zuerst ein kurzes Aufwärmen", wuP:"Schreib 10 Wörter, die so verschieden voneinander sind wie möglich. Nur einzelne Wörter, keine Namen von Personen oder Orten.", wuHint:"Etwa zwei Minuten.", wuCount:n=>`${n} von 10`, wuGo:"Mit den Paaren beginnen", wuSkip:"Aufwärmen überspringen",
+    diffQ:"Dieses Paar war", easy:"leicht", medium:"mittel", hard:"schwer", allOptional:"Alle Fragen sind freiwillig.",
+    aiFreq:"Wie oft nutzt du KI-Werkzeuge wie Chatbots?", freqNever:"Nie", freqMonth:"Ein paar Mal im Monat", freqWeek:"Jede Woche", freqDay:"Jeden Tag", prefer:"Möchte ich nicht sagen",
+    aiFeel:"Wie stehst du zu KI im Alltag?", feelConcern:"Eher besorgt als begeistert", feelBoth:"Gleich besorgt und begeistert", feelExcited:"Eher begeistert als besorgt",
+    firstLang:"Deine Muttersprache", langOther:"Andere", ageQ:"Dein Alter", fieldQ:"Dein Hauptgebiet",
+    arts:"Kunst und Geisteswissenschaften", sci:"Naturwissenschaften", eng:"Technik und Ingenieurwesen", soc:"Sozialwissenschaften", health:"Gesundheit", biz:"Wirtschaft", edu:"Bildung", otherF:"Anderes",
+    cmpQ:"Im Vergleich zu deinen waren die Brücken der KI…", weaker:"schwächer", same:"etwa gleich gut", stronger:"stärker", notsure:"Weiß nicht",
+    ownQ:"Wie sehr fühlen sich deine Brücken wie deine eigenen Ideen an?", own1:"Gar nicht", own5:"Ganz und gar", fbH2:"Hat es dir gefallen?"}
+};
+for(const l in EXTRA) Object.assign(T[l], EXTRA[l]);
+const HELP = {
+  en:{helpH:"How it works", help:["You see two ideas with an arrow between them. Start from the first and find your way to the second.","Write or say any connection that comes to mind. There is no wrong answer.","Stepping stones are optional: the ideas you pass through on the way.","You can mark how hard a pair felt, and you can ask an AI if you want to.","Press “I'm done” whenever you like. Your player code lets you come back later."], close:"Close"},
+  fr:{helpH:"Comment ça marche", help:["Vous voyez deux idées reliées par une flèche. Partez de la première et trouvez un chemin jusqu'à la seconde.","Écrivez ou dites le lien qui vous vient. Il n'y a pas de mauvaise réponse.","Les étapes sont facultatives : ce sont les idées par lesquelles vous passez.","Vous pouvez indiquer si une paire vous a semblé difficile, et demander à une IA si vous le souhaitez.","Appuyez sur « J'ai fini » quand vous voulez. Votre code de joueur vous permet de revenir plus tard."], close:"Fermer"},
+  es:{helpH:"Cómo funciona", help:["Ves dos ideas unidas por una flecha. Parte de la primera y encuentra el camino hasta la segunda.","Escribe o di la conexión que se te ocurra. No hay respuestas incorrectas.","Los pasos intermedios son opcionales: las ideas por las que pasas en el camino.","Puedes marcar qué tan difícil te pareció un par, y pedírselo a una IA si quieres.","Pulsa «He terminado» cuando quieras. Tu código de jugador te permite volver más tarde."], close:"Cerrar"},
+  it:{helpH:"Come funziona", help:["Vedi due idee unite da una freccia. Parti dalla prima e trova la strada fino alla seconda.","Scrivi o di' il collegamento che ti viene in mente. Non ci sono risposte sbagliate.","Le tappe intermedie sono facoltative: le idee che attraversi lungo la strada.","Puoi indicare quanto ti è sembrata difficile una coppia, e chiedere a un'IA se vuoi.","Premi «Ho finito» quando vuoi. Il tuo codice giocatore ti permette di tornare più tardi."], close:"Chiudi"},
+  de:{helpH:"So funktioniert's", help:["Du siehst zwei Ideen mit einem Pfeil dazwischen. Beginne bei der ersten und finde deinen Weg zur zweiten.","Schreib oder sag die Verbindung, die dir einfällt. Es gibt keine falsche Antwort.","Zwischenschritte sind optional: die Ideen, über die du unterwegs gehst.","Du kannst angeben, wie schwer dir ein Paar fiel, und eine KI fragen, wenn du willst.","Tippe auf „Ich bin fertig“, wann immer du willst. Mit deinem Spielercode kannst du später zurückkommen."], close:"Schließen"}
+};
+for(const l in HELP) Object.assign(T[l], HELP[l]);
+// The "?" in the header: a short reminder of how the game works, on every screen.
+let helpOpen = false;
+function renderHelp(){
+  const box = document.getElementById("helpbox"), btn = document.getElementById("helpbtn");
+  if(!box || !btn) return;
+  btn.setAttribute("aria-expanded", String(helpOpen));
+  if(L) btn.setAttribute("aria-label", t("helpH"));
+  if(!helpOpen){ box.innerHTML = ""; return; }
+  box.innerHTML = `<div class="helpbox" role="region" aria-label="${t("helpH")}"><h2 style="font-size:24px">${t("helpH")}</h2><ol>${t("help").map(x=>`<li>${esc(x)}</li>`).join("")}</ol><div class="row"><button class="ghost" id="helpclose" type="button">${t("close")}</button></div></div>`;
+  document.getElementById("helpclose").onclick = () => { helpOpen = false; renderHelp(); };
+}
+Object.assign(T.en,{startOver:"Start over"}); Object.assign(T.fr,{startOver:"Recommencer"}); Object.assign(T.es,{startOver:"Empezar de nuevo"}); Object.assign(T.it,{startOver:"Ricomincia"}); Object.assign(T.de,{startOver:"Neu anfangen"});
+const t = k => (T[L] && T[L][k] !== undefined) ? T[L][k] : T.en[k];
+function wireLeave(btnId, zoneId){
+  const b = document.getElementById(btnId); if(!b) return;
+  b.onclick = () => {
+    const z = document.getElementById(zoneId), label = b.textContent;
+    z.innerHTML = `<div class="confirm"><p class="small">${t("leaveP")(`<span class="code">${esc(P.code)}</span>`)}</p><div class="row"><button class="ghost" id="leaveyes">${t("leaveYes")}</button><button class="link" id="leaveno">${t("leaveNo")}</button></div></div>`;
+    document.getElementById("leaveno").onclick = () => { z.innerHTML = `<button class="link" id="${btnId}">${label}</button>`; wireLeave(btnId, zoneId); };
+    document.getElementById("leaveyes").onclick = () => resetAll();
+  };
+}
+
+// ================= Player memory (this device only) =================
+const KEY = "bridges.player.v2";
+const load = () => { try{ return JSON.parse(localStorage.getItem(KEY)||"null"); }catch(e){ return null; } };
+const save = p => { if(!p) return; try{ localStorage.setItem(KEY, JSON.stringify(p)); }catch(e){} };
+const wipe = () => { try{ localStorage.removeItem(KEY); }catch(e){} };
+const WORDS = ["bee","river","salt","seed","stone","cloud","moon","honey","spider","echo","shadow","wind","sand","bird","key","rain"];
+const makeCode = () => { const r = () => WORDS[Math.floor(Math.random()*WORDS.length)]; let a=r(), b=r(); while(b===a) b=r(); return `${a}-${b}-${10+Math.floor(Math.random()*90)}`; };
+
+let P = load();
+const returning = !!(P && P.code);
+let L = (P && P.lang) || null;
+const shuffle = a => a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(p=>p[1]);
+const S = { visitStarted:new Date().toISOString(), returning, trials:[], end:{}, feedback:null };
+
+let coreOrder=[], byLevel={}, levelCycle=shuffle(["cc","ca","aa"]), poolTurn=0, step=0, coreThisVisit=0;
+function setupPairs(){
+  const seen = new Set((P?.bridges||[]).map(b=>b.pair));
+  coreOrder = shuffle(CORE.filter(p=>!seen.has(p.id))).map(p=>({...p,set:"core"}));
+  coreThisVisit = coreOrder.length;
+  const left = POOL.filter(p=>!seen.has(p.id));
+  byLevel = {cc:shuffle(left.filter(p=>p.level==="cc")), ca:shuffle(left.filter(p=>p.level==="ca")), aa:shuffle(left.filter(p=>p.level==="aa"))};
+}
+function nextPoolPair(){
+  for(let k=0;k<3;k++){ const lv = levelCycle[(poolTurn+k)%3];
+    if(byLevel[lv].length){ poolTurn=(poolTurn+k+1)%3; return {...byLevel[lv].shift(), set:"open"}; } }
+  return null;
+}
+
+const app = document.getElementById("app"), bar = document.getElementById("bar"), sel = document.getElementById("langsel");
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const updateLog = () => { document.getElementById("log").textContent = JSON.stringify({player:P, thisVisit:S},null,2); refreshTop(); };
+// "Start over" in the header, on every screen once a player exists: this device forgets the player, answers stay under the code.
+function refreshTop(){ renderHelp(); const so = document.getElementById("startover"); if(!so) return; so.hidden = !(P && P.code); if(L) so.textContent = t("startOver"); }
+function resetAll(){
+  wipe(); P = null; S.trials = []; S.end = {}; S.feedback = null; step = 0; coreThisVisit = 0;
+  document.getElementById("topconfirm").innerHTML = ""; bar.style.width = "0%";
+  setLang(detectLang()); welcome(); window.scrollTo(0,0);
+}
+function setBar(){ bar.style.width = coreThisVisit && step<=coreThisVisit ? Math.round(step/coreThisVisit*100)+"%" : (step? "100%" : "0%"); }
+const bridgeHTML = b => `
+  <div class="list-item">
+    <div class="bridge"><span class="chip">${esc(b.from)}</span>${(b.stones||[]).map(s=>`<span class="arrow">→</span><span>${esc(s)}</span>`).join("")}<span class="arrow">→</span><span class="chip">${esc(b.to)}</span></div>
+    <p class="small">${esc(b.final)}</p>
+  </div>`;
+
+// Header language switch: screens that are safe to redraw get redrawn; during a pair the change applies from the next screen.
+let redraw = null;
+function setLang(l){
+  const prev = L; L = l; document.documentElement.lang = l;
+  if(P){ P.lang = l; if(prev && prev!==l) (P.langChanges = P.langChanges||[]).push({from:prev,to:l,at:new Date().toISOString()}); save(P); }
+  sel.value = l; updateLog();
+}
+document.getElementById("resetproto").onclick = () => resetAll();
+document.getElementById("helpbtn").onclick = () => { helpOpen = !helpOpen; renderHelp(); };
+document.getElementById("startover").onclick = () => {
+  const box = document.getElementById("topconfirm");
+  if(box.innerHTML){ box.innerHTML = ""; return; }
+  box.innerHTML = `<div class="confirm"><p class="small">${t("leaveP")(`<span class="code">${esc(P.code)}</span>`)}</p><div class="row"><button class="ghost" id="soyes" type="button">${t("startOver")}</button><button class="link" id="sono" type="button">${t("leaveNo")}</button></div></div>`;
+  document.getElementById("sono").onclick = () => box.innerHTML = "";
+  document.getElementById("soyes").onclick = () => resetAll();
+};
+sel.innerHTML = LANGS.map(([c,n])=>`<option value="${c}">${n}</option>`).join("");
+sel.onchange = () => { setLang(sel.value); if(redraw) redraw(); };
+function showSel(){ sel.hidden = false; sel.value = L; }
+
+// ================= Screens =================
+function chooseLanguage(){
+  redraw = null; sel.hidden = true;
+  app.innerHTML = `
+  <section class="panel">
+    <div class="hello">
+      <span>Bridges</span>
+      <span>Choose your language · Choisissez votre langue · Elige tu idioma · Scegli la lingua · Wähle deine Sprache</span>
+    </div>
+    <div class="langs">${LANGS.map(([c,n])=>`<button type="button" data-l="${c}" lang="${c}">${n}</button>`).join("")}</div>
+  </section>`;
+  app.querySelectorAll(".langs button").forEach(b => b.onclick = () => { setLang(b.dataset.l); showSel(); welcome(); });
+  updateLog();
+}
+
+function welcome(){
+  redraw = welcome; sel.hidden = true;
+  app.innerHTML = `
+  <section class="panel">
+    <div class="langchips" role="group" aria-label="Language">${LANGS.map(([c,n])=>`<button type="button" data-l="${c}" lang="${c}" class="${c===L?"on":""}" aria-pressed="${c===L}">${n}</button>`).join("")}</div>
+    <h1>${t("welcomeH1")}</h1>
+    <p>${t("welcomeP")}</p>
+    <p class="muted small">${t("welcomeSmall")}</p>
+  </section>
+  <section class="panel">
+    <h2>${t("keepH2")}</h2>
+    <ul class="plain small"><li>${t("keep1")}</li><li>${t("keep2")}</li><li>${t("keep3")}</li></ul>
+    <p class="small muted">${t("study")}</p>
+    <label class="check"><input type="checkbox" id="age"> ${t("age")}</label>
+    <label class="check"><input type="checkbox" id="consent"> ${t("consent")}</label>
+    <div class="row spread"><button class="primary" id="go" disabled>${t("start")}</button><button class="link" id="havecode">${t("haveCode")}</button></div>
+    <div id="codebox"></div>
+  </section>`;
+  app.querySelectorAll(".langchips button").forEach(b => b.onclick = () => { setLang(b.dataset.l); welcome(); });
+  const age = document.getElementById("age"), c = document.getElementById("consent"), g = document.getElementById("go");
+  const check = () => g.disabled = !(age.checked && c.checked);
+  age.onchange = check; c.onchange = check;
+  const begin = (code, restored) => {
+    showSel();
+    // Someone who started earlier but built no bridge keeps the same code, group and warm-up.
+    const unfinished = P && P.code && !P.bridges.length && !restored;
+    if(unfinished) P.lang = L;
+    else P = { code, lang:L, group: "choose", firstVisit:new Date().toISOString(), visits:1, bridges:[], feedbackGiven:false, restoredFromCode:!!restored };
+    save(P); if(restored || P.warmup){ setupPairs(); next(); } else warmup();
+  };
+  g.onclick = () => begin(makeCode(), false);
+  document.getElementById("havecode").onclick = () => {
+    document.getElementById("codebox").innerHTML = `
+      <div class="confirm">
+        <label for="codein">${t("codeLabel")}</label>
+        <input type="text" id="codein" placeholder="${t("codePh")}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+        <p class="small muted">${t("codeNote")}</p>
+        <div class="row"><button class="ghost" id="usecode">${t("cont")}</button></div>
+      </div>`;
+    document.getElementById("usecode").onclick = () => { const v = document.getElementById("codein").value.trim().toLowerCase().replace(/[\s_.]+/g,"-"); if(v) begin(v, true); };
+  };
+  setBar(); updateLog();
+}
+
+function welcomeBack(first){
+  if(first){ P.visits = (P.visits||1) + 1; save(P); }
+  redraw = () => welcomeBack(false);
+  showSel();
+  app.innerHTML = `
+  <section class="panel">
+    <span class="tag">${t("wbTag")}</span>
+    <p class="count">${t("built")(P.bridges.length)}</p>
+    <p>${t("wbP")}</p>
+    <div class="row"><button class="primary" id="cont">${t("cont")}</button><button class="ghost" id="mine">${t("seeMine")}</button></div>
+    <p class="small muted">${t("yourCode")} <span class="code">${esc(P.code)}</span></p>
+    <div id="leavezone"><button class="link" id="leave">${t("notYou")}</button></div>
+  </section>`;
+  document.getElementById("cont").onclick = () => { setupPairs(); next(); };
+  document.getElementById("mine").onclick = () => myBridges();
+  wireLeave("leave","leavezone");
+  setBar(); updateLog();
+}
+
+function myBridges(){
+  redraw = myBridges;
+  app.innerHTML = `
+  <section class="panel">
+    <h2>${t("mineH2")}</h2>
+    ${P.bridges.length ? P.bridges.map(bridgeHTML).join("") : `<p class="muted">${t("none")}</p>`}
+    <div class="row"><button class="primary" id="cont">${t("keepBuilding")}</button></div>
+    <div id="delzone"><button class="link" id="del">${t("delAll")}</button></div>
+  </section>`;
+  document.getElementById("cont").onclick = () => { setupPairs(); next(); };
+  wireDelete();
+}
+
+function wireDelete(){
+  const btn = document.getElementById("del"); if(!btn) return;
+  btn.onclick = () => {
+    document.getElementById("delzone").innerHTML = `
+      <div class="confirm">
+        <p class="small">${t("delConfirm")(`<span class="code">${esc(P.code)}</span>`)}</p>
+        <div class="row"><button class="ghost" id="delyes">${t("delYes")}</button><button class="link" id="delno">${t("delNo")}</button></div>
+      </div>`;
+    document.getElementById("delno").onclick = () => { document.getElementById("delzone").innerHTML = `<button class="link" id="del">${t("delAll")}</button>`; wireDelete(); };
+    document.getElementById("delyes").onclick = () => { wipe(); P = null; S.trials = []; redraw = null;
+      app.innerHTML = `<section class="panel"><h2>${t("deleted")}</h2><p class="muted">${t("deletedP")}</p></section>`; updateLog(); };
+  };
+}
+
+// ================= Warm-up (taken before any AI is shown) =================
+// Divergent Association Task: 10 words as different as possible, scored later from the first 7 valid ones.
+function warmup(prev){
+  const w = prev ? prev.w : {shownAt:Date.now(), pasted:false};
+  app.innerHTML = `
+  <section class="panel">
+    <span class="tag">${t("wuTag")}</span>
+    <h2>${t("wuH2")}</h2>
+    <p>${t("wuP")}</p>
+    <p class="small muted">${t("wuHint")}</p>
+    <div class="dat">${Array.from({length:10},(_,i)=>`<input type="text" id="w${i}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="${i+1}" placeholder="${i+1}">`).join("")}</div>
+    <p class="small muted" id="wcount">${t("wuCount")(0)}</p>
+    <div class="row spread"><button class="primary" id="wgo" disabled>${t("wuGo")}</button><button class="link" id="wskip">${t("wuSkip")}</button></div>
+  </section>`;
+  const ins = Array.from({length:10},(_,i)=>document.getElementById("w"+i));
+  const go = document.getElementById("wgo"), cnt = document.getElementById("wcount");
+  const words = () => ins.map(x=>x.value.trim()).filter(Boolean);
+  const recount = () => { const n = words().length; cnt.textContent = t("wuCount")(n); go.disabled = n < 7; };
+  ins.forEach(x => { x.addEventListener("input", recount); x.addEventListener("paste", () => w.pasted = true); });
+  if(prev){ prev.vals.forEach((v,i)=>ins[i].value = v); recount(); }
+  redraw = () => warmup({w, vals: ins.map(x=>x.value)});
+  go.onclick = () => { P.warmup = {words:words(), ms:Date.now()-w.shownAt, pasted:w.pasted, lang:L}; save(P); updateLog(); setupPairs(); next(); };
+  document.getElementById("wskip").onclick = () => { P.warmup = {skipped:true}; save(P); updateLog(); setupPairs(); next(); };
+  updateLog();
+}
+
+// ================= Play =================
+function next(){
+  let p = step < coreThisVisit ? coreOrder[step] : nextPoolPair();
+  if(!p){ finalQuestions(); return; }
+  p = Math.random() < 0.5 ? {...p, a:p.b, b:p.a, dir:"ba"} : {...p, dir:"ab"};
+  step++; setBar(); trial(p);
+}
+
+function trial(p, prev){
+  const inCore = p.set==="core";
+  const tr = prev ? Object.assign(prev.tr, {from:word(p.a), to:word(p.b), lang:L, langSwitched:true}) : {pair:p.id, set:p.set, level:p.level, dir:p.dir, fromKey:p.a, toKey:p.b, from:word(p.a), to:word(p.b), lang:L,
+              group:P.group, visit:P.visits, position:step, shownAt:Date.now(), firstKeyMs:null, submitMs:null,
+              pasted:false, pastedChars:0, voice:false, aiRequested:false, difficulty:null, answer:"", stones:[], revised:false, final:""};
+  app.innerHTML = `
+  <section class="panel">
+    <div class="row spread"><span class="tag">${inCore ? t("pairOf")(step, coreThisVisit) : t("openPlay")}</span><button class="link" id="stop">${t("done")}</button></div>
+    <div class="pair"><div class="idea">${esc(tr.from)}</div><div class="gap"></div><div class="idea">${esc(tr.to)}</div></div>
+    <div class="choice" style="gap:6px">
+      <label for="ans" class="qlabel">${t("question")}</label>
+      <textarea id="ans" placeholder="${t("ansPh")}"></textarea>
+      <div class="row"><button class="mic" id="mic" aria-pressed="false" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span id="micLabel">${t("speak")}</span></button><span class="micnote" id="micNote"></span></div>
+    </div>
+    <div>
+      <label>${t("stones")} <span class="muted small" style="font-weight:400">${t("stonesHint")}</span></label>
+      <div class="stones" style="margin-top:8px">
+        <input type="text" id="s1" placeholder="${t("first")}"><input type="text" id="s2" placeholder="${t("then")}"><input type="text" id="s3" placeholder="${t("then")}">
+      </div>
+    </div>
+    <div id="aibox"></div>
+    <div class="diff" id="diff"><span>${t("diffQ")}</span>${["easy","medium","hard"].map(d=>`<button type="button" data-d="${d}" aria-pressed="false">${t(d)}</button>`).join("")}</div>
+    <div class="row">
+      <button class="primary" id="send" disabled>${t("next")}</button>
+      <button class="aibtn" id="askai">${t("askAI")}</button>
+      ${inCore ? `` : `<button class="ghost" id="skip">${t("skip")}</button>`}
+    </div>
+  </section>`;
+  const ans = document.getElementById("ans"), send = document.getElementById("send");
+  ans.addEventListener("input", () => { if(tr.firstKeyMs===null) tr.firstKeyMs = Date.now()-tr.shownAt; send.disabled = !ans.value.trim(); });
+  ans.addEventListener("paste", e => { tr.pasted = true; tr.pastedChars += (e.clipboardData?.getData("text")||"").length; });
+  app.querySelectorAll("#diff button").forEach(b => b.onclick = () => {
+    const on = tr.difficulty !== b.dataset.d; tr.difficulty = on ? b.dataset.d : null;
+    app.querySelectorAll("#diff button").forEach(x => x.setAttribute("aria-pressed", String(on && x===b)));
+  });
+  // Changing language mid-pair redraws the pair in the new language and keeps what was written.
+  if(prev){
+    ans.value = prev.vals.ans; ["s1","s2","s3"].forEach((k,i)=>document.getElementById(k).value = prev.vals.stones[i]); send.disabled = !ans.value.trim();
+    if(tr.difficulty) app.querySelectorAll("#diff button").forEach(x=>x.setAttribute("aria-pressed", String(x.dataset.d===tr.difficulty)));
+    if(tr.aiRequested){ const a = document.getElementById("askai"); if(a) a.disabled = true; document.getElementById("aibox").innerHTML = aiCard(p.id, t("aiHintChoose")); }
+  }
+  redraw = () => trial(p, {tr, vals:{ans:ans.value, stones:["s1","s2","s3"].map(k=>document.getElementById(k).value)}});
+
+  // Voice in the chosen language; spoken words become editable text, no audio kept.
+  const mic = document.getElementById("mic"), micNote = document.getElementById("micNote"), micLabel = document.getElementById("micLabel");
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec = null;
+  const stopMic = () => { mic.setAttribute("aria-pressed","false"); micLabel.textContent = t("speak"); };
+  const noVoice = () => { stopMic(); micNote.textContent = t("noVoice"); };
+  mic.onclick = () => {
+    if(rec){ try{ rec.stop(); }catch(e){} rec = null; stopMic(); return; }
+    if(!SR){ noVoice(); return; }
+    try{
+      rec = new SR(); rec.lang = SPEECH[L] || "en-GB"; rec.interimResults = false; rec.continuous = true;
+      rec.onresult = e => {
+        let said = ""; for(let k=e.resultIndex;k<e.results.length;k++) if(e.results[k].isFinal) said += e.results[k][0].transcript;
+        if(said){ ans.value = (ans.value ? ans.value.trim()+" " : "") + said.trim(); tr.voice = true;
+          if(tr.firstKeyMs===null) tr.firstKeyMs = Date.now()-tr.shownAt; send.disabled = !ans.value.trim(); updateLog(); }
+      };
+      rec.onerror = () => { rec = null; noVoice(); };
+      rec.onend = () => { rec = null; stopMic(); };
+      rec.start(); mic.setAttribute("aria-pressed","true"); micLabel.textContent = t("listening"); micNote.textContent = "";
+    }catch(e){ rec = null; noVoice(); }
+  };
+  const stopRec = () => { if(rec){ try{ rec.stop(); }catch(e){} rec = null; } };
+
+  document.getElementById("stop").onclick = () => { stopRec(); finalQuestions(); };
+  const skip = document.getElementById("skip");
+  if(skip) skip.onclick = () => { stopRec(); tr.skipped = true; S.trials.push(tr); updateLog(); next(); };
+  const ask = document.getElementById("askai");
+  if(ask) ask.onclick = () => { tr.aiRequested = true; ask.disabled = true; document.getElementById("aibox").innerHTML = aiCard(p.id, t("aiHintChoose")); updateLog(); };
+  send.onclick = () => {
+    stopRec();
+    tr.answer = ans.value.trim();
+    tr.stones = ["s1","s2","s3"].map(k=>document.getElementById(k).value.trim()).filter(Boolean);
+    tr.submitMs = Date.now()-tr.shownAt;
+    tr.final = tr.answer; record(tr); afterTrial();
+  };
+}
+
+function record(tr){
+  if(tr.aiRequested) P.sawAI = true;
+  if(tr.aiRequested) P.usedAI = true;
+  S.trials.push(tr);
+  P.bridges.push({pair:tr.pair, from:tr.from, to:tr.to, stones:tr.stones, final:tr.final, lang:tr.lang, at:new Date().toISOString()});
+  save(P); updateLog();
+}
+
+function aiCard(id, hint){
+  const txt = (AI[L] && AI[L][id]) || t("aiPending");
+  return `<div class="ai"><span class="tag">${t("aiTag")}</span><p>${esc(txt)}</p><p class="small muted">${hint}</p></div>`;
+}
+
+function revealAfter(p,tr,revText){
+  tr.from = word(p.a); tr.to = word(p.b);
+  app.innerHTML = `
+  <section class="panel">
+    <span class="tag">${p.set==="core" ? t("pairOf")(step, coreThisVisit) : t("openPlay")}</span>
+    <div class="pair"><div class="idea">${esc(tr.from)}</div><div class="gap"></div><div class="idea">${esc(tr.to)}</div></div>
+    <div><span class="tag">${t("yourBridge")}</span><p style="margin-top:6px">${esc(tr.answer)}</p></div>
+    ${aiCard(p.id, t("aiHintAfter"))}
+    <div class="choice">
+      <label for="rev" class="qlabel">${t("changeQ")}</label>
+      <textarea id="rev">${esc(tr.answer)}</textarea>
+    </div>
+    <div class="row"><button class="primary" id="keep">${t("keepMine")}</button><button class="ghost" id="save">${t("saveChanges")}</button></div>
+  </section>`;
+  if(revText !== undefined) document.getElementById("rev").value = revText;
+  redraw = () => revealAfter(p, tr, document.getElementById("rev").value);
+  const done = revised => {
+    const v = document.getElementById("rev").value.trim();
+    tr.revised = revised && v !== tr.answer; tr.final = revised ? v : tr.answer;
+    record(tr); afterTrial();
+  };
+  document.getElementById("keep").onclick = () => done(false);
+  document.getElementById("save").onclick = () => done(true);
+}
+
+function afterTrial(){ if(coreThisVisit && step === coreThisVisit) coreDone(); else next(); }
+
+function coreDone(){
+  redraw = coreDone;
+  app.innerHTML = `
+  <section class="panel">
+    <span class="tag">${t("coreTag")}</span>
+    <p class="count">${t("built")(P.bridges.length)}</p>
+    <p>${t("coreP")}</p>
+    <div class="row"><button class="primary" id="more">${t("keepGoing")}</button><button class="ghost" id="fin">${t("finishHere")}</button></div>
+  </section>`;
+  document.getElementById("more").onclick = () => next();
+  document.getElementById("fin").onclick = () => finalQuestions();
+}
+
+// ================= End =================
+// One-tap optional choices.
+const pills = (name, opts) => `<div class="pills" role="radiogroup">${opts.map(([v,l])=>`<label><input type="radio" name="${name}" value="${v}">${l}</label>`).join("")}</div>`;
+const picked = name => (document.querySelector(`input[name="${name}"]:checked`)||{}).value || null;
+const q = (title, body) => `<div class="q"><span class="qt">${title}</span>${body}</div>`;
+
+function finalQuestions(){
+  if(P.answeredEnd){ feedback(); return; }
+  redraw = () => {
+    const keep = [...document.querySelectorAll("input[type=radio]:checked")].map(x=>[x.name,x.value]);
+    finalQuestions();
+    keep.forEach(([n,v]) => { const el = document.querySelector(`input[name="${n}"][value="${v}"]`); if(el) el.checked = true; });
+  };
+  const isNew = !(P.restoredFromCode || P.visits>1);
+  const NA = ["na", t("prefer")];
+  const LANGLIST = [["en","English"],["fr","Français"],["es","Español"],["it","Italiano"],["de","Deutsch"],["pt","Português"],["zh","中文"],["ja","日本語"],["ar","العربية"],["hi","हिन्दी"],["ru","Русский"],["other",t("langOther")],NA];
+  app.innerHTML = `
+  <section class="panel">
+    <h2>${t("qH2")}</h2>
+    <p class="small muted">${t("allOptional")}</p>
+    ${isNew ? q(t("before"), pills("before", [["no",t("beforeNo")],["yes",t("beforeYes")]])) : ""}
+    ${q(t("ext"), pills("ext", [["no",t("extNo")],["some",t("extSome")],["most",t("extMost")],["na",t("extSkip")]]))}
+    ${q(t("aiFreq"), pills("freq", [["never",t("freqNever")],["month",t("freqMonth")],["week",t("freqWeek")],["day",t("freqDay")],NA]))}
+    ${q(t("aiFeel"), pills("feel", [["concerned",t("feelConcern")],["both",t("feelBoth")],["excited",t("feelExcited")],NA]))}
+    ${P.sawAI ? q(t("cmpQ"), pills("cmp", [["weaker",t("weaker")],["same",t("same")],["stronger",t("stronger")],["unsure",t("notsure")]])) : ""}
+    ${P.usedAI ? q(t("ownQ"), pills("own", [1,2,3,4,5].map(n=>[String(n),String(n)])) + `<div class="scale-ends"><span>1 · ${t("own1")}</span><span>5 · ${t("own5")}</span></div>`) : ""}
+    ${q(t("firstLang"), pills("flang", LANGLIST))}
+    ${q(t("ageQ"), pills("age", [["18-24","18–24"],["25-34","25–34"],["35-44","35–44"],["45-54","45–54"],["55-64","55–64"],["65+","65+"],NA]))}
+    ${q(t("fieldQ"), pills("field", [["arts",t("arts")],["sci",t("sci")],["eng",t("eng")],["soc",t("soc")],["health",t("health")],["biz",t("biz")],["edu",t("edu")],["other",t("otherF")],NA]))}
+    <div class="row"><button class="primary" id="fin">${t("cont")}</button></div>
+  </section>`;
+  document.getElementById("fin").onclick = () => {
+    S.end = { playedBefore:picked("before"), externalAI:picked("ext"), aiFrequency:picked("freq"), aiFeeling:picked("feel"),
+              aiComparison:picked("cmp"), ownership:picked("own"), firstLanguage:picked("flang"), ageBand:picked("age"), field:picked("field") };
+    P.answeredEnd = true; save(P); updateLog(); feedback();
+  };
+}
+
+function finalQuestionsOld(){
+  if(P.answeredEnd){ feedback(); return; }
+  redraw = null;
+  app.innerHTML = `
+  <section class="panel">
+    <h2>${t("qH2")}</h2>
+    ${P.restoredFromCode || P.visits>1 ? `` : `
+    <fieldset class="choice" style="border:0;padding:0;margin:0">
+      <legend style="font-weight:700;margin-bottom:8px">${t("before")}</legend>
+      <label><input type="radio" name="before" value="no"> ${t("beforeNo")}</label>
+      <label><input type="radio" name="before" value="yes"> ${t("beforeYes")}</label>
+    </fieldset>`}
+    <fieldset class="choice" style="border:0;padding:0;margin:0">
+      <legend style="font-weight:700;margin-bottom:8px">${t("ext")}</legend>
+      <label><input type="radio" name="ext" value="no"> ${t("extNo")}</label>
+      <label><input type="radio" name="ext" value="some"> ${t("extSome")}</label>
+      <label><input type="radio" name="ext" value="most"> ${t("extMost")}</label>
+      <label><input type="radio" name="ext" value="skip"> ${t("extSkip")}</label>
+    </fieldset>
+    <div class="choice">
+      <label for="field" class="qlabel">${t("field")} <span class="muted small" style="font-weight:400">${t("optional")}</span></label>
+      <input type="text" id="field" placeholder="${t("fieldPh")}">
+    </div>
+    <div class="row"><button class="primary" id="fin">${t("cont")}</button></div>
+  </section>`;
+  document.getElementById("fin").onclick = () => {
+    S.end.playedBefore = (document.querySelector('input[name=before]:checked')||{}).value || null;
+    S.end.externalAI = (document.querySelector('input[name=ext]:checked')||{}).value || null;
+    S.end.field = document.getElementById("field").value.trim() || null;
+    P.answeredEnd = true; save(P); updateLog(); feedback();
+  };
+}
+
+function feedback(prev){
+  if(P.feedbackGiven){ thanks(); return; }
+  let rating = prev ? prev.rating : 0;
+  app.innerHTML = `
+  <section class="panel">
+    <h2>${t("fbH2")}</h2>
+    <p class="muted small">${t("fbSmall")}</p>
+    <div class="stars" role="group" aria-label="1–5">${[1,2,3,4,5].map(n=>`<button type="button" data-n="${n}" aria-label="${n}/5">★</button>`).join("")}</div>
+    <div class="choice">
+      <label for="fb" class="qlabel">${t("fbQ")}</label>
+      <textarea id="fb" placeholder="${t("fbPh")}"></textarea>
+    </div>
+    <div class="choice">
+      <label for="mail" class="qlabel">${t("mailQ")} <span class="muted small" style="font-weight:400">${t("optional")}</span></label>
+      <input type="email" id="mail" placeholder="${t("mailPh")}">
+      <p class="small muted">${t("mailNote")}</p>
+    </div>
+    <div class="row"><button class="primary" id="sendfb">${t("send")}</button><button class="ghost" id="skipfb">${t("skipBtn")}</button></div>
+  </section>`;
+  if(prev){ document.getElementById("fb").value = prev.fb; document.getElementById("mail").value = prev.mail;
+    app.querySelectorAll(".stars button").forEach(x => x.classList.toggle("on", +x.dataset.n <= rating)); }
+  redraw = () => feedback({rating, fb:document.getElementById("fb").value, mail:document.getElementById("mail").value});
+  app.querySelectorAll(".stars button").forEach(b => b.onclick = () => {
+    rating = +b.dataset.n; app.querySelectorAll(".stars button").forEach(x => x.classList.toggle("on", +x.dataset.n <= rating));
+  });
+  document.getElementById("sendfb").onclick = () => {
+    S.feedback = { rating: rating || null, comment: document.getElementById("fb").value.trim() || null, lang:L, linkedToAnswers:false };
+    S.resultsEmailList = document.getElementById("mail").value.trim() ? "one email added to a separate list" : null;
+    P.feedbackGiven = true; save(P); updateLog(); thanks();
+  };
+  document.getElementById("skipfb").onclick = () => thanks();
+}
+
+function thanks(){
+  redraw = thanks;
+  bar.style.width = "100%";
+  const v = S.trials.filter(x=>!x.skipped && x.final);
+  app.innerHTML = `
+  <section class="panel">
+    <h2>${t("thanksH2")}</h2>
+    <p>${t("thanksP")(v.length, P.bridges.length)}</p>
+    ${v.map(bridgeHTML).join("")}
+    <div class="section">
+      <span class="tag">${t("aboutTag")}</span>
+      <p class="small">${t("aboutP")}</p>
+      <p class="small muted">${t("aboutNote")}</p>
+    </div>
+    <div class="section">
+      <span class="tag">${t("codeTag")}</span>
+      <p><span class="code">${esc(P.code)}</span></p>
+      <p class="small muted">${t("codeNote")}</p>
+    </div>
+    <div class="row"><button class="primary" id="again">${t("playMore")}</button><button class="ghost" id="mine">${t("seeAll")}</button></div>
+    <div id="leavezone"><button class="link" id="leave">${t("leave")}</button></div>
+  </section>`;
+  document.getElementById("again").onclick = () => { step = 0; S.trials = []; setupPairs(); next(); };
+  document.getElementById("mine").onclick = () => myBridges();
+  wireLeave("leave","leavezone");
+}
+
+// ================= Start =================
+// Opens straight on the welcome page, in the browser's language when it is one of the five, otherwise English.
+function detectLang(){ const b = (navigator.language||"en").slice(0,2).toLowerCase(); return LANGS.some(([c])=>c===b) ? b : "en"; }
+if(returning && L){
+  document.documentElement.lang = L;
+  // Someone who left before building any bridge sees the normal intro again; Start picks up where they were.
+  if(!P.bridges.length) welcome();
+  else welcomeBack(true);
+} else { setLang(detectLang()); welcome(); }
+</script>
