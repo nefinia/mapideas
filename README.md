@@ -2,6 +2,8 @@
 
 The code behind [mapideas.org](https://mapideas.org): a public, non-linear map where ideas grow and relate, with readings in both directions, answers, open questions and sources. It also serves the Bridges game at [mapideas.org/bridges](https://mapideas.org/bridges).
 
+The position paper *Fostering Epistemic Diversity in the AI Era*, which proposes the map, is in [`paper/`](paper/main.pdf).
+
 A shared constellation of ideas, starting from Gödel. One Cloudflare Worker serves the site and the API; data lives in D1.
 
 ## Set up (once)
